@@ -3,7 +3,7 @@
  * Displays Chinese, Pinyin, and English text
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -16,6 +16,8 @@ import {
   Modal,
   useColorScheme,
   Platform,
+  Pressable,
+  Dimensions,
 } from 'react-native';
 
 // Data structure interfaces
@@ -47,6 +49,99 @@ interface Settings {
   showPinyin: boolean;
   showEnglish: boolean;
 }
+
+// Translation card interfaces
+interface TranslationCardData {
+  word: string;
+  translation: Translation;
+  position: { x: number; y: number };
+  language: 'chinese' | 'pinyin' | 'english';
+}
+
+interface TranslationCardProps {
+  visible: boolean;
+  data: TranslationCardData | null;
+  onClose: () => void;
+  isDarkMode: boolean;
+}
+
+// Translation Card Component
+const TranslationCard: React.FC<TranslationCardProps> = ({ visible, data, onClose, isDarkMode }) => {
+  if (!visible || !data) return null;
+
+  const screenWidth = Dimensions.get('window').width;
+  const cardWidth = screenWidth * 0.8;
+  const cardHeight = 180;
+  
+  // Calculate position to keep card on screen
+  const left = Math.min(Math.max(data.position.x - cardWidth / 2, 10), screenWidth - cardWidth - 10);
+  const top = Math.max(data.position.y - cardHeight - 10, 60);
+
+  return (
+    <Modal
+      transparent={true}
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.translationCardOverlay} onPress={onClose}>
+        <View
+          style={[
+            styles.translationCard,
+            {
+              left,
+              top,
+              width: cardWidth,
+              height: cardHeight,
+              backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+              borderColor: isDarkMode ? '#444444' : '#e0e0e0',
+            },
+          ]}
+        >
+          <View style={styles.translationCardHeader}>
+            <Text style={[styles.translationCardTitle, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+              "{data.word}"
+            </Text>
+            <TouchableOpacity style={styles.translationCardClose} onPress={onClose}>
+              <Text style={[styles.translationCardCloseText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+                ×
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.translationCardContent}>
+            <View style={styles.translationCardRow}>
+              <Text style={[styles.translationCardLabel, { color: isDarkMode ? '#cccccc' : '#666666' }]}>
+                Chinese:
+              </Text>
+              <Text style={[styles.translationCardText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+                {data.translation.chinese}
+              </Text>
+            </View>
+            
+            <View style={styles.translationCardRow}>
+              <Text style={[styles.translationCardLabel, { color: isDarkMode ? '#cccccc' : '#666666' }]}>
+                Pinyin:
+              </Text>
+              <Text style={[styles.translationCardText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+                {data.translation.pinyin}
+              </Text>
+            </View>
+            
+            <View style={styles.translationCardRow}>
+              <Text style={[styles.translationCardLabel, { color: isDarkMode ? '#cccccc' : '#666666' }]}>
+                English:
+              </Text>
+              <Text style={[styles.translationCardText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+                {data.translation.english}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+};
 
 // Sample documents
 const sampleDocuments: Document[] = [
@@ -222,6 +317,8 @@ function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [currentDocument, setCurrentDocument] = useState<Document>(sampleDocuments[0]);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [translationCard, setTranslationCard] = useState<TranslationCardData | null>(null);
+  const [isTranslationCardVisible, setIsTranslationCardVisible] = useState(false);
   const [settings, setSettings] = useState<Settings>({
     showChinese: true,
     showPinyin: true,
@@ -236,23 +333,109 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? '#2a2a2a' : '#f5f5f5',
   };
 
+  // Handle word long press
+  const handleWordLongPress = useCallback((event: any, word: string, translation: Translation, language: 'chinese' | 'pinyin' | 'english') => {
+    const { pageX, pageY } = event.nativeEvent;
+    setTranslationCard({
+      word,
+      translation,
+      position: { x: pageX, y: pageY },
+      language,
+    });
+    setIsTranslationCardVisible(true);
+  }, []);
+
+  // Close translation card
+  const closeTranslationCard = useCallback(() => {
+    setIsTranslationCardVisible(false);
+    setTranslationCard(null);
+  }, []);
+
+  // Handle gutter button press
+  const handleGutterPress = useCallback((translation: Translation) => {
+    setTranslationCard({
+      word: 'Full Sentence',
+      translation,
+      position: { x: 100, y: 200 },
+      language: 'chinese',
+    });
+    setIsTranslationCardVisible(true);
+  }, []);
+
+  // Render individual words with long press functionality
+  const renderTextWithLongPress = useCallback((text: string, translation: Translation, language: 'chinese' | 'pinyin' | 'english', textStyle: any) => {
+    let words: string[];
+    
+    if (language === 'chinese') {
+      // For Chinese, split by character
+      words = text.split('');
+    } else {
+      // For English and Pinyin, split by space
+      words = text.split(' ');
+    }
+    
+    return (
+      <Text style={textStyle}>
+        {words.map((word, index) => (
+          <Text key={index}>
+            <Pressable
+              onLongPress={(event) => handleWordLongPress(event, word, translation, language)}
+              delayLongPress={500}
+            >
+              <Text style={textStyle}>{word}</Text>
+            </Pressable>
+            {index < words.length - 1 && (language === 'chinese' ? '' : ' ')}
+          </Text>
+        ))}
+      </Text>
+    );
+  }, [handleWordLongPress]);
+
   const renderTranslation = (translation: Translation) => (
-    <View style={styles.translationContainer}>
-      {settings.showChinese && (
-        <Text style={[styles.chineseText, {color: isDarkMode ? '#ffffff' : '#000000'}]}>
-          {translation.chinese}
+    <View style={styles.lineContentContainer}>
+      {/* Gutter Button */}
+      <TouchableOpacity
+        style={styles.gutterButton}
+        onPress={() => handleGutterPress(translation)}
+      >
+        <Text style={[styles.gutterButtonText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+          ⓘ
         </Text>
-      )}
-      {settings.showPinyin && (
-        <Text style={[styles.pinyinText, {color: isDarkMode ? '#cccccc' : '#666666'}]}>
-          {translation.pinyin}
-        </Text>
-      )}
-      {settings.showEnglish && (
-        <Text style={[styles.englishText, {color: isDarkMode ? '#888888' : '#777777'}]}>
-          {translation.english}
-        </Text>
-      )}
+      </TouchableOpacity>
+
+      {/* Translation Content */}
+      <View style={styles.translationContainer}>
+        {settings.showChinese && (
+          <View style={styles.languageRow}>
+            {renderTextWithLongPress(
+              translation.chinese,
+              translation,
+              'chinese',
+              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }]
+            )}
+          </View>
+        )}
+        {settings.showPinyin && (
+          <View style={styles.languageRow}>
+            {renderTextWithLongPress(
+              translation.pinyin,
+              translation,
+              'pinyin',
+              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }, styles.pinyinStyle]
+            )}
+          </View>
+        )}
+        {settings.showEnglish && (
+          <View style={styles.languageRow}>
+            {renderTextWithLongPress(
+              translation.english,
+              translation,
+              'english',
+              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }]
+            )}
+          </View>
+        )}
+      </View>
     </View>
   );
 
@@ -462,6 +645,14 @@ function App(): React.JSX.Element {
           </View>
         </View>
       </Modal>
+
+      {/* Translation Card */}
+      <TranslationCard
+        visible={isTranslationCardVisible}
+        data={translationCard}
+        onClose={closeTranslationCard}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 }
@@ -508,22 +699,23 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   documentTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 4,
     fontFamily: 'System',
   },
   documentTitlePinyin: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 26,
+    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 4,
     fontFamily: 'System',
+    fontStyle: 'italic',
   },
   documentTitleEnglish: {
-    fontSize: 16,
-    fontWeight: '400',
+    fontSize: 26,
+    fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: 'System',
   },
@@ -541,26 +733,26 @@ const styles = StyleSheet.create({
     borderBottomColor: '#d0d0d0',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600',
     marginBottom: 4,
     fontFamily: 'System',
   },
   sectionTitlePinyin: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '600',
     marginBottom: 2,
     fontFamily: 'System',
+    fontStyle: 'italic',
   },
   sectionTitleEnglish: {
-    fontSize: 14,
-    fontWeight: '400',
+    fontSize: 20,
+    fontWeight: '600',
     fontFamily: 'System',
   },
   
   // Line (Paragraph) styles
   lineContainer: {
-    marginBottom: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
@@ -569,25 +761,8 @@ const styles = StyleSheet.create({
   
   // Translation styles
   translationContainer: {
+    flex: 1,
     alignItems: 'flex-start',
-  },
-  chineseText: {
-    fontSize: 20,
-    fontWeight: '500',
-    marginBottom: 2,
-    fontFamily: 'System',
-  },
-  pinyinText: {
-    fontSize: 16,
-    fontWeight: '400',
-    marginBottom: 2,
-    fontFamily: 'System',
-    fontStyle: 'italic',
-  },
-  englishText: {
-    fontSize: 14,
-    fontWeight: '400',
-    fontFamily: 'System',
   },
   
   // Modal and Menu styles
@@ -670,6 +845,99 @@ const styles = StyleSheet.create({
   toggleLabel: {
     fontSize: 16,
     fontWeight: '500',
+  },
+
+  // Translation Card styles
+  translationCardOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+     translationCard: {
+     position: 'absolute',
+     borderRadius: 10,
+     borderWidth: 1,
+     shadowColor: '#000',
+     shadowOffset: { width: 0, height: 2 },
+     shadowOpacity: 0.25,
+     shadowRadius: 4,
+     elevation: 5,
+   },
+  translationCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  translationCardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 10,
+  },
+  translationCardClose: {
+    padding: 5,
+  },
+  translationCardCloseText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  translationCardContent: {
+    padding: 15,
+  },
+  translationCardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  translationCardLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  translationCardText: {
+    fontSize: 16,
+    fontWeight: '400',
+  },
+  pinyinStyle: {
+    fontStyle: 'italic',
+  },
+
+  // New styles for line content container
+  lineContentContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  gutterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  gutterButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  
+  // Language text styles with equal weight
+  languageRow: {
+    marginBottom: 4,
+  },
+  languageText: {
+    fontSize: 18,
+    fontWeight: '500',
+    lineHeight: 26,
+    fontFamily: 'System',
   },
 });
 
