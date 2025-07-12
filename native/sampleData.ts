@@ -1,170 +1,173 @@
-import { Document } from './types';
+import { Document, Translation } from './types';
 
-export const sampleDocuments: Document[] = [
-  {
-    id: 'doc1',
-    title: {
-      chinese: '我的第一课',
-      pinyin: 'wǒ de dì yī kè',
-      english: 'My First Lesson'
-    },
-    sections: [
-      {
-        id: 'section1',
-        title: {
-          chinese: '问候语',
-          pinyin: 'wèn hòu yǔ',
-          english: 'Greetings'
-        },
-        lines: [
-          {
-            id: 'line1',
-            translation: {
-              chinese: '你好',
-              pinyin: 'nǐ hǎo',
-              english: 'Hello'
-            }
-          },
-          {
-            id: 'line2',
-            translation: {
-              chinese: '你好吗？',
-              pinyin: 'nǐ hǎo ma?',
-              english: 'How are you?'
-            }
-          },
-          {
-            id: 'line3',
-            translation: {
-              chinese: '我很好',
-              pinyin: 'wǒ hěn hǎo',
-              english: 'I am fine'
-            }
-          }
-        ]
-      },
-      {
-        id: 'section2',
-        title: {
-          chinese: '自我介绍',
-          pinyin: 'zì wǒ jiè shào',
-          english: 'Self Introduction'
-        },
-        lines: [
-          {
-            id: 'line4',
-            translation: {
-              chinese: '我叫李华',
-              pinyin: 'wǒ jiào lǐ huá',
-              english: 'My name is Li Hua'
-            }
-          },
-          {
-            id: 'line5',
-            translation: {
-              chinese: '我是学生',
-              pinyin: 'wǒ shì xué shēng',
-              english: 'I am a student'
-            }
-          },
-          {
-            id: 'line6',
-            translation: {
-              chinese: '很高兴认识你',
-              pinyin: 'hěn gāo xìng rèn shi nǐ',
-              english: 'Nice to meet you'
-            }
-          }
-        ]
+// Simple markdown-style format for easier content management
+const sampleDataMarkdown = `
+# 我的第一课
+# wǒ de dì yī kè
+# My First Lesson
+
+## 问候语
+## wèn hòu yǔ
+## Greetings
+
+你好
+nǐ hǎo
+Hello
+
+你好吗？
+nǐ hǎo ma?
+How are you?
+
+我很好
+wǒ hěn hǎo
+I am fine
+
+## 自我介绍
+## zì wǒ jiè shào
+## Self Introduction
+
+我叫李华
+wǒ jiào lǐ huá
+My name is Li Hua
+
+我是学生
+wǒ shì xué shēng
+I am a student
+
+很高兴认识你
+hěn gāo xìng rèn shi nǐ
+Nice to meet you
+
+---
+
+# 在餐厅
+# zài cān tīng
+# At the Restaurant
+
+## 点菜
+## diǎn cài
+## Ordering Food
+
+菜单在哪里？
+cài dān zài nǎ lǐ?
+Where is the menu?
+
+我想要一份米饭
+wǒ xiǎng yào yī fèn mǐ fàn
+I want a bowl of rice
+
+多少钱？
+duō shǎo qián?
+How much does it cost?
+
+---
+
+# 购物
+# gòu wù
+# Shopping
+
+## 买衣服
+## mǎi yī fú
+## Buying Clothes
+
+这件衣服多少钱？
+zhè jiàn yī fú duō shǎo qián?
+How much is this piece of clothing?
+
+有没有小号的？
+yǒu méi yǒu xiǎo hào de?
+Do you have a small size?
+
+我可以试穿吗？
+wǒ kě yǐ shì chuān ma?
+Can I try it on?
+`;
+
+// Parser function to convert markdown format to Document structure
+function parseMarkdownToDocuments(markdown: string): Document[] {
+  const documents: Document[] = [];
+  const documentSections = markdown.trim().split('---').filter(section => section.trim());
+  
+  documentSections.forEach((docSection, docIndex) => {
+    const lines = docSection.trim().split('\n').filter(line => line.trim());
+    
+    if (lines.length === 0) return;
+    
+    // Parse document title (first 3 lines starting with #)
+    const titleLines = lines.slice(0, 3);
+    const documentTitle: Translation = {
+      chinese: titleLines[0].replace(/^#\s*/, '').trim(),
+      pinyin: titleLines[1].replace(/^#\s*/, '').trim(),
+      english: titleLines[2].replace(/^#\s*/, '').trim()
+    };
+    
+    const document: Document = {
+      id: `doc${docIndex + 1}`,
+      title: documentTitle,
+      sections: []
+    };
+    
+    // Parse sections and content
+    let currentSection: any = null;
+    let sectionIndex = 0;
+    let lineIndex = 0;
+    
+    for (let i = 3; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('##')) {
+        // New section title (collect next 3 lines)
+        if (currentSection) {
+          document.sections.push(currentSection);
+        }
+        
+        const sectionTitleLines = lines.slice(i, i + 3);
+        const sectionTitle: Translation = {
+          chinese: sectionTitleLines[0].replace(/^##\s*/, '').trim(),
+          pinyin: sectionTitleLines[1].replace(/^##\s*/, '').trim(),
+          english: sectionTitleLines[2].replace(/^##\s*/, '').trim()
+        };
+        
+        currentSection = {
+          id: `section${sectionIndex + 1}`,
+          title: sectionTitle,
+          lines: []
+        };
+        
+        sectionIndex++;
+        i += 2; // Skip the next 2 lines as they are part of the section title
+      } else if (line && !line.startsWith('#') && currentSection) {
+        // Translation line - collect in groups of 3
+        const translationLines = lines.slice(i, i + 3);
+        
+        if (translationLines.length === 3) {
+          const translation: Translation = {
+            chinese: translationLines[0].trim(),
+            pinyin: translationLines[1].trim(),
+            english: translationLines[2].trim()
+          };
+          
+          currentSection.lines.push({
+            id: `line${lineIndex + 1}`,
+            translation
+          });
+          
+          lineIndex++;
+          i += 2; // Skip the next 2 lines as they are part of this translation
+        }
       }
-    ]
-  },
-  {
-    id: 'doc2',
-    title: {
-      chinese: '在餐厅',
-      pinyin: 'zài cān tīng',
-      english: 'At the Restaurant'
-    },
-    sections: [
-      {
-        id: 'section3',
-        title: {
-          chinese: '点菜',
-          pinyin: 'diǎn cài',
-          english: 'Ordering Food'
-        },
-        lines: [
-          {
-            id: 'line7',
-            translation: {
-              chinese: '菜单在哪里？',
-              pinyin: 'cài dān zài nǎ lǐ?',
-              english: 'Where is the menu?'
-            }
-          },
-          {
-            id: 'line8',
-            translation: {
-              chinese: '我想要一份米饭',
-              pinyin: 'wǒ xiǎng yào yī fèn mǐ fàn',
-              english: 'I want a bowl of rice'
-            }
-          },
-          {
-            id: 'line9',
-            translation: {
-              chinese: '多少钱？',
-              pinyin: 'duō shǎo qián?',
-              english: 'How much does it cost?'
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'doc3',
-    title: {
-      chinese: '购物',
-      pinyin: 'gòu wù',
-      english: 'Shopping'
-    },
-    sections: [
-      {
-        id: 'section4',
-        title: {
-          chinese: '买衣服',
-          pinyin: 'mǎi yī fú',
-          english: 'Buying Clothes'
-        },
-        lines: [
-          {
-            id: 'line10',
-            translation: {
-              chinese: '这件衣服多少钱？',
-              pinyin: 'zhè jiàn yī fú duō shǎo qián?',
-              english: 'How much is this piece of clothing?'
-            }
-          },
-          {
-            id: 'line11',
-            translation: {
-              chinese: '有没有小号的？',
-              pinyin: 'yǒu méi yǒu xiǎo hào de?',
-              english: 'Do you have a small size?'
-            }
-          },
-          {
-            id: 'line12',
-            translation: {
-              chinese: '我可以试穿吗？',
-              pinyin: 'wǒ kě yǐ shì chuān ma?',
-              english: 'Can I try it on?'
-            }
-          }
-        ]
-      }
-    ]
-  }
-]; 
+    }
+    
+    // Add the last section
+    if (currentSection) {
+      document.sections.push(currentSection);
+    }
+    
+    documents.push(document);
+  });
+  
+  return documents;
+}
+
+// Export the parsed documents
+export const sampleDocuments: Document[] = parseMarkdownToDocuments(sampleDataMarkdown); 
