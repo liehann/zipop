@@ -15,6 +15,7 @@ import {
   Switch,
   Modal,
   useColorScheme,
+  Platform,
 } from 'react-native';
 
 // Data structure interfaces
@@ -311,11 +312,18 @@ function App(): React.JSX.Element {
     <SafeAreaView style={[styles.container, backgroundStyle]}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+        backgroundColor={isDarkMode ? '#2a2a2a' : '#f8f8f8'}
+        translucent={false}
       />
       
       {/* Header with Menu Button */}
-      <View style={[styles.header, {backgroundColor: isDarkMode ? '#2a2a2a' : '#f8f8f8'}]}>
+      <View style={[
+        styles.header, 
+        {backgroundColor: isDarkMode ? '#2a2a2a' : '#f8f8f8'},
+        Platform.OS === 'android' && {
+          paddingTop: (StatusBar.currentHeight || 0) + 12,
+        }
+      ]}>
         <TouchableOpacity 
           style={styles.menuButton}
           onPress={() => setIsMenuVisible(true)}
