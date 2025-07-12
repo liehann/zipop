@@ -1,0 +1,374 @@
+---
+globs: native/**
+alwaysApply: false
+---
+# ZiPop Native App - Cursor Rules
+
+## Project Overview
+This is a React Native multilingual reading app that displays Chinese, Pinyin, and English text. The app uses TypeScript and follows modern React Native patterns.
+
+## Technical Stack
+- React Native 0.80.1
+- React 19.1.0
+- TypeScript 5.0.4
+- Jest for testing
+- ESLint + Prettier for code quality
+- Metro bundler
+
+## Core Data Structures
+
+### Translation Interface
+```typescript
+interface Translation {
+  chinese: string;
+  pinyin: string;
+  english: string;
+}
+```
+
+### Document Structure
+```typescript
+interface Document {
+  id: string;
+  title: Translation;
+  sections: Section[];
+}
+
+interface Section {
+  id: string;
+  title: Translation;
+  lines: Line[];
+}
+
+interface Line {
+  id: string;
+  translation: Translation;
+}
+```
+
+## Development Rules
+
+### TypeScript Guidelines
+- Always use strict TypeScript mode
+- Define interfaces for all data structures
+- Use proper typing for React Native components
+- Prefer interfaces over types for object shapes
+- Use proper generic typing for hooks and functions
+
+### React Native Patterns
+- Use functional components with hooks
+- Implement proper SafeAreaView for different devices
+- Use StyleSheet.create for styling
+- Handle dark/light mode with useColorScheme
+- Use proper TouchableOpacity/Pressable for interactions
+- Implement proper keyboard handling
+- Use proper ScrollView patterns for long content
+
+### Component Structure
+- Keep components focused and single-responsibility
+- Extract reusable components to separate files
+- Use proper prop typing with interfaces
+- Implement proper error boundaries
+- Use React.memo for performance optimization when needed
+
+### Translation/Multilingual Rules
+- Always maintain the Translation interface structure
+- Ensure all three languages (Chinese, Pinyin, English) are provided
+- Use consistent ID patterns for documents, sections, and lines
+- Implement proper settings for language visibility toggles
+- Handle Chinese character rendering properly
+- Use proper Unicode support for special characters
+
+### State Management
+- Use useState for local component state
+- Use useEffect for side effects
+- Consider useCallback and useMemo for performance
+- Keep state as close to usage as possible
+- Use proper state typing
+
+### Styling Guidelines
+- Use StyleSheet.create for all styles
+- Follow React Native styling patterns
+- Use proper flexbox layouts
+- Implement responsive design for different screen sizes
+- Use proper color schemes for dark/light mode
+- Maintain consistent spacing and typography
+
+### Performance Considerations
+- Use FlatList or SectionList for large datasets
+- Implement proper image optimization
+- Use proper memory management
+- Avoid unnecessary re-renders
+- Use React.memo and useMemo appropriately
+
+### Testing Standards
+- Write unit tests with Jest
+- Use React Test Renderer for component testing
+- Test both iOS and Android specific code
+- Test translation rendering
+- Test user interactions and state changes
+
+### Code Quality
+- Follow ESLint configuration
+- Use Prettier for code formatting
+- Write descriptive component and function names
+- Add proper JSDoc comments for complex functions
+- Use proper error handling
+
+### File Organization
+- Keep components in logical directories
+- Use index.ts files for clean imports
+- Separate styles, types, and utilities
+- Use proper naming conventions (PascalCase for components, camelCase for functions)
+
+### Platform Considerations
+- Test on both iOS and Android
+- Handle platform-specific differences
+- Use proper permissions handling
+- Implement proper navigation patterns
+- Handle device orientation changes
+
+### Development Workflow
+- Use npm scripts for common tasks
+- Follow proper Git commit patterns
+- Use proper debugging techniques
+- Handle hot reloading properly
+- Use proper development tools
+
+## Common Patterns
+
+### Rendering Translation Content
+```typescript
+const renderTranslation = (translation: Translation) => (
+  <View style={styles.translationContainer}>
+    {settings.showChinese && <Text style={styles.chinese}>{translation.chinese}</Text>}
+    {settings.showPinyin && <Text style={styles.pinyin}>{translation.pinyin}</Text>}
+    {settings.showEnglish && <Text style={styles.english}>{translation.english}</Text>}
+  </View>
+);
+```
+
+### Settings Management
+```typescript
+interface Settings {
+  showChinese: boolean;
+  showPinyin: boolean;
+  showEnglish: boolean;
+}
+
+const toggleSetting = (key: keyof Settings) => {
+  setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+};
+```
+
+### Document Navigation
+- Use proper modal patterns for document selection
+- Implement proper section and line navigation
+- Handle document loading states
+- Use proper scroll to functionality
+
+## Error Handling
+- Implement proper error boundaries
+- Handle network failures gracefully
+- Provide user-friendly error messages
+- Use proper loading states
+- Handle edge cases in translation data
+
+## Accessibility
+- Add proper accessibility labels
+- Support screen readers
+- Use proper semantic elements
+- Handle focus management
+- Support high contrast modes
+
+## Security
+- Validate all user inputs
+- Handle sensitive data properly
+- Use proper secure storage
+- Implement proper authentication if needed
+- Follow React Native security best practices
+# ZiPop Native App - Cursor Rules
+
+## Project Overview
+This is a React Native multilingual reading app that displays Chinese, Pinyin, and English text. The app uses TypeScript and follows modern React Native patterns.
+
+## Technical Stack
+- React Native 0.80.1
+- React 19.1.0
+- TypeScript 5.0.4
+- Jest for testing
+- ESLint + Prettier for code quality
+- Metro bundler
+
+## Core Data Structures
+
+### Translation Interface
+```typescript
+interface Translation {
+  chinese: string;
+  pinyin: string;
+  english: string;
+}
+```
+
+### Document Structure
+```typescript
+interface Document {
+  id: string;
+  title: Translation;
+  sections: Section[];
+}
+
+interface Section {
+  id: string;
+  title: Translation;
+  lines: Line[];
+}
+
+interface Line {
+  id: string;
+  translation: Translation;
+}
+```
+
+## Development Rules
+
+### TypeScript Guidelines
+- Always use strict TypeScript mode
+- Define interfaces for all data structures
+- Use proper typing for React Native components
+- Prefer interfaces over types for object shapes
+- Use proper generic typing for hooks and functions
+
+### React Native Patterns
+- Use functional components with hooks
+- Implement proper SafeAreaView for different devices
+- Use StyleSheet.create for styling
+- Handle dark/light mode with useColorScheme
+- Use proper TouchableOpacity/Pressable for interactions
+- Implement proper keyboard handling
+- Use proper ScrollView patterns for long content
+
+### Component Structure
+- Keep components focused and single-responsibility
+- Extract reusable components to separate files
+- Use proper prop typing with interfaces
+- Implement proper error boundaries
+- Use React.memo for performance optimization when needed
+
+### Translation/Multilingual Rules
+- Always maintain the Translation interface structure
+- Ensure all three languages (Chinese, Pinyin, English) are provided
+- Use consistent ID patterns for documents, sections, and lines
+- Implement proper settings for language visibility toggles
+- Handle Chinese character rendering properly
+- Use proper Unicode support for special characters
+
+### State Management
+- Use useState for local component state
+- Use useEffect for side effects
+- Consider useCallback and useMemo for performance
+- Keep state as close to usage as possible
+- Use proper state typing
+
+### Styling Guidelines
+- Use StyleSheet.create for all styles
+- Follow React Native styling patterns
+- Use proper flexbox layouts
+- Implement responsive design for different screen sizes
+- Use proper color schemes for dark/light mode
+- Maintain consistent spacing and typography
+
+### Performance Considerations
+- Use FlatList or SectionList for large datasets
+- Implement proper image optimization
+- Use proper memory management
+- Avoid unnecessary re-renders
+- Use React.memo and useMemo appropriately
+
+### Testing Standards
+- Write unit tests with Jest
+- Use React Test Renderer for component testing
+- Test both iOS and Android specific code
+- Test translation rendering
+- Test user interactions and state changes
+
+### Code Quality
+- Follow ESLint configuration
+- Use Prettier for code formatting
+- Write descriptive component and function names
+- Add proper JSDoc comments for complex functions
+- Use proper error handling
+
+### File Organization
+- Keep components in logical directories
+- Use index.ts files for clean imports
+- Separate styles, types, and utilities
+- Use proper naming conventions (PascalCase for components, camelCase for functions)
+
+### Platform Considerations
+- Test on both iOS and Android
+- Handle platform-specific differences
+- Use proper permissions handling
+- Implement proper navigation patterns
+- Handle device orientation changes
+
+### Development Workflow
+- Use npm scripts for common tasks
+- Follow proper Git commit patterns
+- Use proper debugging techniques
+- Handle hot reloading properly
+- Use proper development tools
+
+## Common Patterns
+
+### Rendering Translation Content
+```typescript
+const renderTranslation = (translation: Translation) => (
+  <View style={styles.translationContainer}>
+    {settings.showChinese && <Text style={styles.chinese}>{translation.chinese}</Text>}
+    {settings.showPinyin && <Text style={styles.pinyin}>{translation.pinyin}</Text>}
+    {settings.showEnglish && <Text style={styles.english}>{translation.english}</Text>}
+  </View>
+);
+```
+
+### Settings Management
+```typescript
+interface Settings {
+  showChinese: boolean;
+  showPinyin: boolean;
+  showEnglish: boolean;
+}
+
+const toggleSetting = (key: keyof Settings) => {
+  setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+};
+```
+
+### Document Navigation
+- Use proper modal patterns for document selection
+- Implement proper section and line navigation
+- Handle document loading states
+- Use proper scroll to functionality
+
+## Error Handling
+- Implement proper error boundaries
+- Handle network failures gracefully
+- Provide user-friendly error messages
+- Use proper loading states
+- Handle edge cases in translation data
+
+## Accessibility
+- Add proper accessibility labels
+- Support screen readers
+- Use proper semantic elements
+- Handle focus management
+- Support high contrast modes
+
+## Security
+- Validate all user inputs
+- Handle sensitive data properly
+- Use proper secure storage
+- Implement proper authentication if needed
+- Follow React Native security best practices
