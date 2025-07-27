@@ -1,9 +1,9 @@
 /**
  * ZiPop - Chinese Reader App
- * Audio-synchronized Chinese text reader with word-level translations
+ * Simple word-based Chinese reader with fixed header and footer
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -13,214 +13,93 @@ import {
   View,
   TouchableOpacity,
   useColorScheme,
-  Platform,
-  Pressable,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import types and data
 import {
-  ChineseText,
-  Sentence,
+  WordListData,
   Word,
   AudioState,
-  TranslationBarState,
-  Settings,
+  TranslationState,
+  HEADER_HEIGHT,
+  FOOTER_HEIGHT,
 } from './types';
-import { sampleChineseText } from './sampleData';
-import AudioPlayer from './components/AudioPlayer';
-import TranslationBar from './components/TranslationBar';
+import { sampleWordList } from './sampleData';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  let insets;
+  
+  try {
+    insets = useSafeAreaInsets();
+  } catch (error) {
+    // Fallback if safe area context is not available
+    insets = { top: 0, bottom: 0, left: 0, right: 0 };
+  }
+  
   const scrollViewRef = useRef<ScrollView>(null);
   
   // App state
-  const [currentText] = useState<ChineseText>(sampleChineseText);
-  const [audioState, setAudioState] = useState<AudioState>({
+  const [wordList] = useState<WordListData>(sampleWordList);
+  const [audioState] = useState<AudioState>({
     isPlaying: false,
-    currentTime: 2, // Show 0:02 like in the design
-    duration: 100, // Estimated duration in seconds
-    playbackSpeed: 1.0,
-    currentSentenceId: null,
+    currentTime: 5, // 00:05
+    duration: 116, // 01:56
   });
   
-  const [translationBarState, setTranslationBarState] = useState<TranslationBarState>({
-    type: 'word',
-    content: { chinese: '中国的', pinyin: 'Zhōngguó de', english: "China's" },
-    visible: true, // Show by default like in the design
-  });
-  
-  const [settings] = useState<Settings>({
-    playbackSpeed: 1.0,
-    autoScroll: true,
-    fontSize: 20,
+  const [translationState, setTranslationState] = useState<TranslationState>({
+    selectedWord: null,
   });
 
-  // Audio control handlers
-  const handlePlay = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isPlaying: true }));
-    // TODO: Implement actual TTS audio playback
+  // Format time for display
+  const formatTime = (timeInSeconds: number): string => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Handle word tap
+  const handleWordTap = useCallback((word: Word) => {
+    setTranslationState({ selectedWord: word });
   }, []);
 
-  const handlePause = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isPlaying: false }));
-    // TODO: Pause actual audio
-  }, []);
-
-  const handleSeek = useCallback((time: number) => {
-    setAudioState(prev => ({ ...prev, currentTime: time }));
-    // TODO: Seek audio to specific time
-  }, []);
-
-  const handleSpeedChange = useCallback((speed: number) => {
-    setAudioState(prev => ({ ...prev, playbackSpeed: speed }));
-    // TODO: Change actual audio playback speed
-  }, []);
-
-  // Text interaction handlers
-  const handleSentencePress = useCallback((sentence: Sentence) => {
-    const combinedChinese = sentence.words.map(w => w.chinese).join('');
-    const combinedPinyin = sentence.words.map(w => w.pinyin).join(' ');
-    const combinedEnglish = sentence.words.map(w => w.english).join(' ');
-    
-    setTranslationBarState({
-      type: 'sentence',
-      content: {
-        chinese: combinedChinese,
-        pinyin: combinedPinyin,
-        english: combinedEnglish,
-      },
-      visible: true,
-    });
-  }, []);
-
-  const handleWordPress = useCallback((word: Word) => {
-    setTranslationBarState({
-      type: 'word',
-      content: {
-        chinese: word.chinese,
-        pinyin: word.pinyin,
-        english: word.english,
-      },
-      visible: true,
-    });
-  }, []);
-
-  const handleCharacterPress = useCallback((character: string, word: Word) => {
-    setTranslationBarState({
-      type: 'character',
-      content: {
-        chinese: character,
-        pinyin: word.pinyin, // Use the word's pinyin for context
-        english: word.english, // Use the word's English for context
-      },
-      visible: true,
-    });
-  }, []);
-
-  const handleCloseTranslationBar = useCallback(() => {
-    setTranslationBarState(prev => ({ ...prev, visible: false }));
-  }, []);
-
-  // Header action handlers
-  const handleNewText = useCallback(() => {
-    // TODO: Implement new text functionality
-    console.log('New Text pressed');
-  }, []);
-
-  const handleLibrary = useCallback(() => {
-    // TODO: Implement library functionality
-    console.log('Library pressed');
-  }, []);
-
-  // Simulate audio progress for demo
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (audioState.isPlaying) {
-      interval = setInterval(() => {
-        setAudioState(prev => {
-          const newTime = prev.currentTime + 0.1;
-          
-          // Find current sentence based on time
-          const currentSentence = currentText.sentences.find(
-            sentence => sentence.startTime !== undefined && sentence.endTime !== undefined &&
-                       newTime >= sentence.startTime && newTime < sentence.endTime
-          );
-          
-          const newCurrentSentenceId = currentSentence ? currentSentence.id : null;
-          
-          return {
-            ...prev,
-            currentTime: newTime < prev.duration ? newTime : prev.duration,
-            currentSentenceId: newCurrentSentenceId,
-          };
-        });
-      }, 100);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [audioState.isPlaying, currentText.sentences]);
-
-  // Render individual word with Chinese and Pinyin stacked
-  const renderWord = useCallback((word: Word, wordIndex: number) => {
-    return (
-      <Pressable
-        key={wordIndex}
-        onPress={() => handleWordPress(word)}
-        style={styles.wordContainer}
-      >
-        <View style={styles.wordContent}>
-          {/* Pinyin on top */}
-          <Text style={[
-            styles.pinyinText,
-            { 
-              color: isDarkMode ? '#999999' : '#666666',
-              fontSize: settings.fontSize * 0.6
-            }
-          ]}>
-            {word.pinyin}
-          </Text>
-          
-          {/* Chinese characters below */}
-          <Text style={[
-            styles.chineseText,
-            { 
-              color: isDarkMode ? '#ffffff' : '#000000',
-              fontSize: settings.fontSize
-            }
-          ]}>
-            {word.chinese}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  }, [handleWordPress, isDarkMode, settings.fontSize]);
-
-  // Render individual sentence
-  const renderSentence = useCallback((sentence: Sentence, sentenceIndex: number) => {
-    const isCurrentSentence = audioState.currentSentenceId === sentence.id;
+  // Render individual word
+  const renderWord = useCallback((word: Word) => {
+    const isSelected = translationState.selectedWord?.id === word.id;
     
     return (
-      <View
-        key={sentence.id}
+      <TouchableOpacity
+        key={word.id}
         style={[
-          styles.sentenceContainer,
-          isCurrentSentence && styles.currentSentenceContainer,
-          { backgroundColor: isCurrentSentence 
-            ? (isDarkMode ? 'rgba(255, 206, 84, 0.1)' : 'rgba(255, 206, 84, 0.1)')
-            : 'transparent'
+          styles.wordContainer,
+          isSelected && styles.selectedWordContainer,
+          {
+            backgroundColor: isSelected
+              ? (isDarkMode ? 'rgba(255, 206, 84, 0.2)' : 'rgba(255, 206, 84, 0.15)')
+              : 'transparent'
           }
         ]}
+        onPress={() => handleWordTap(word)}
       >
-        <View style={styles.sentenceContent}>
-          {sentence.words.map((word, wordIndex) => renderWord(word, wordIndex))}
-        </View>
-      </View>
+        {/* Pinyin on top */}
+        <Text style={[
+          styles.pinyinText,
+          { color: isDarkMode ? '#999999' : '#666666' }
+        ]}>
+          {word.pinyin}
+        </Text>
+        
+        {/* Hanzi on bottom */}
+        <Text style={[
+          styles.hanziText,
+          { color: isDarkMode ? '#ffffff' : '#000000' }
+        ]}>
+          {word.hanzi}
+        </Text>
+      </TouchableOpacity>
     );
-  }, [audioState.currentSentenceId, renderWord, isDarkMode]);
+  }, [handleWordTap, translationState.selectedWord, isDarkMode]);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
@@ -234,15 +113,17 @@ function App(): React.JSX.Element {
         translucent={false}
       />
       
-      {/* Header */}
-      <View style={[
-        styles.header,
-        { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
-      ]}>
-        <View style={styles.headerLeft}>
-          <View style={styles.iconContainer}>
-            <Text style={styles.headerIcon}>📖</Text>
-          </View>
+      {/* Parent View with flex: 1 and flexDirection: 'column' */}
+      <View style={styles.parentContainer}>
+        
+        {/* FIXED HEADER - View with fixed height, not in ScrollView */}
+        <View style={[
+          styles.header,
+          { 
+            backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+            height: HEADER_HEIGHT 
+          }
+        ]}>
           <Text style={[
             styles.headerTitle,
             { color: isDarkMode ? '#ffffff' : '#000000' }
@@ -250,75 +131,81 @@ function App(): React.JSX.Element {
             中文阅读器
           </Text>
           <Text style={[
-            styles.headerSubtitle,
+            styles.audioStatus,
             { color: isDarkMode ? '#999999' : '#666666' }
           ]}>
-            Chinese Reader
+            {audioState.isPlaying ? '▶︎' : '⏸'} {formatTime(audioState.currentTime)} / {formatTime(audioState.duration)}
           </Text>
         </View>
+
+        {/* SCROLLABLE CONTENT - ScrollView with flex: 1 */}
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: FOOTER_HEIGHT + insets.bottom }
+          ]}
+          showsVerticalScrollIndicator={true}
+        >
+          <View style={styles.wordsGrid}>
+            {wordList.words.map(renderWord)}
+          </View>
+        </ScrollView>
         
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleNewText}
-          >
-            <Text style={[
-              styles.headerButtonText,
-              { color: isDarkMode ? '#ffffff' : '#000000' }
-            ]}>
-              + New Text
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleLibrary}
-          >
-            <Text style={[
-              styles.headerButtonText,
-              { color: isDarkMode ? '#ffffff' : '#000000' }
-            ]}>
-              📚 Library
-            </Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
-      {/* Audio Player */}
-      <AudioPlayer
-        audioState={audioState}
-        onPlay={handlePlay}
-        onPause={handlePause}
-        onSeek={handleSeek}
-        onSpeedChange={handleSpeedChange}
-        isDarkMode={isDarkMode}
-      />
-
-      {/* Scrollable Text Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        contentInsetAdjustmentBehavior="automatic"
-        style={[styles.textScrollView, backgroundStyle]}
-        contentContainerStyle={styles.textContent}
-        showsVerticalScrollIndicator={true}
-      >
-        <View style={styles.textContainer}>
-          {/* Sentences */}
-          {currentText.sentences.map((sentence, index) => 
-            renderSentence(sentence, index)
+      {/* FIXED FOOTER - Absolute positioned at bottom */}
+      <View style={[
+        styles.footer,
+        { 
+          backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+          height: FOOTER_HEIGHT,
+          paddingBottom: insets.bottom,
+          bottom: 0,
+        }
+      ]}>
+        <View style={styles.footerContent}>
+          <Text style={[
+            styles.footerLabel,
+            { color: isDarkMode ? '#999999' : '#666666' }
+          ]}>
+            Translation
+          </Text>
+          
+          {translationState.selectedWord ? (
+            <View style={styles.translationContent}>
+              <View style={styles.translationHeader}>
+                <Text style={[
+                  styles.translationHanzi,
+                  { color: isDarkMode ? '#ffffff' : '#000000' }
+                ]}>
+                  {translationState.selectedWord.hanzi}
+                </Text>
+                <Text style={[
+                  styles.translationPinyin,
+                  { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+                ]}>
+                  {translationState.selectedWord.pinyin}
+                </Text>
+              </View>
+              <Text style={[
+                styles.translationEnglish,
+                { color: isDarkMode ? '#cccccc' : '#666666' }
+              ]}>
+                {translationState.selectedWord.english}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[
+              styles.noTranslationText,
+              { color: isDarkMode ? '#666666' : '#999999' }
+            ]}>
+              Tap a word to see its translation
+            </Text>
           )}
         </View>
-        
-        {/* Bottom padding to ensure content doesn't get hidden behind translation bar */}
-        <View style={{ height: 200 }} />
-      </ScrollView>
-
-      {/* Translation Bar at Bottom */}
-      <TranslationBar
-        state={translationBarState}
-        onClose={handleCloseTranslationBar}
-        isDarkMode={isDarkMode}
-      />
+      </View>
     </SafeAreaView>
   );
 }
@@ -327,95 +214,112 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  parentContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#D2691E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  headerIcon: {
-    fontSize: 18,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 8,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    fontWeight: '400',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginLeft: 8,
-  },
-  headerButtonText: {
+  audioStatus: {
     fontSize: 14,
     fontWeight: '500',
   },
-  textScrollView: {
+  scrollView: {
     flex: 1,
   },
-  textContent: {
-    flexGrow: 1,
+  scrollContent: {
+    paddingTop: 20,
+    paddingHorizontal: 16,
   },
-  textContainer: {
-    padding: 24,
-  },
-  sentenceContainer: {
-    marginBottom: 32,
-    padding: 16,
-    borderRadius: 12,
-  },
-  currentSentenceContainer: {
-    backgroundColor: 'rgba(255, 206, 84, 0.15)',
-  },
-  sentenceContent: {
+  wordsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    alignItems: 'flex-start',
+    justifyContent: 'space-around',
     gap: 16,
   },
   wordContainer: {
-    marginBottom: 8,
-  },
-  wordContent: {
     alignItems: 'center',
-    minWidth: 24,
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    minWidth: 80,
+    minHeight: 80,
+    marginBottom: 16,
+  },
+  selectedWordContainer: {
+    borderWidth: 2,
+    borderColor: '#D2691E',
   },
   pinyinText: {
+    fontSize: 14,
     fontWeight: '400',
     textAlign: 'center',
     marginBottom: 4,
-    lineHeight: 16,
   },
-  chineseText: {
-    fontWeight: '500',
+  hanziText: {
+    fontSize: 24,
+    fontWeight: '600',
     fontFamily: 'System',
     textAlign: 'center',
-    lineHeight: 28,
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    zIndex: 10,
+    elevation: 10,
+  },
+  footerContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    flex: 1,
+  },
+  footerLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+  translationContent: {
+    flex: 1,
+  },
+  translationHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 8,
+    gap: 12,
+  },
+  translationHanzi: {
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: 'System',
+  },
+  translationPinyin: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontStyle: 'italic',
+  },
+  translationEnglish: {
+    fontSize: 16,
+    fontWeight: '400',
+  },
+  noTranslationText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
