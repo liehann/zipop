@@ -1,47 +1,5 @@
 import { Word, Sentence, WordListData, SavedDocument } from '../types';
-
-// Mock pinyin dictionary - in a real app, this would use a proper API or library
-const mockPinyinDict: Record<string, string> = {
-  '你': 'nǐ',
-  '好': 'hǎo',
-  '吗': 'ma',
-  '我': 'wǒ',
-  '很': 'hěn',
-  '谢': 'xiè',
-  '对': 'duì',
-  '不': 'bù',
-  '起': 'qǐ',
-  '再': 'zài',
-  '见': 'jiàn',
-  '他': 'tā',
-  '她': 'tā',
-  '是': 'shì',
-  '老': 'lǎo',
-  '师': 'shī',
-  '学': 'xué',
-  '生': 'shēng',
-  '中': 'zhōng',
-  '国': 'guó',
-  '人': 'rén',
-  '什': 'shén',
-  '么': 'me',
-  '名': 'míng',
-  '字': 'zì',
-  '叫': 'jiào',
-  '今': 'jīn',
-  '天': 'tiān',
-  '明': 'míng',
-  '去': 'qù',
-  '哪': 'nǎ',
-  '里': 'lǐ',
-  '吃': 'chī',
-  '饭': 'fàn',
-  '喝': 'hē',
-  '水': 'shuǐ',
-  '茶': 'chá',
-  '咖': 'kā',
-  '啡': 'fēi'
-};
+import { toPinyin, sentenceToPinyin, toPinyinWithoutTones } from './pinyinUtils';
 
 // Mock English dictionary - in a real app, this would use a proper API
 const mockEnglishDict: Record<string, string> = {
@@ -128,10 +86,24 @@ export function splitIntoWords(sentence: string): string[] {
 }
 
 /**
- * Get pinyin for a Chinese character (mock implementation)
+ * Get pinyin for a Chinese character or text using the pinyin library
  */
 export function getPinyin(character: string): string {
-  return mockPinyinDict[character] || character;
+  return toPinyin(character);
+}
+
+/**
+ * Get pinyin for a full sentence with proper spacing
+ */
+export function getSentencePinyin(sentence: string): string {
+  return sentenceToPinyin(sentence);
+}
+
+/**
+ * Get pinyin without tone marks (useful for input or search)
+ */
+export function getPinyinWithoutTones(character: string): string {
+  return toPinyinWithoutTones(character);
 }
 
 /**
@@ -175,7 +147,7 @@ export function processChineseText(
     const sentence: Sentence = {
       id: `sentence-${sentenceIndex}`,
       words: processedWords,
-      sentencePinyin: processedWords.map(w => w.pinyin).join(' '),
+      sentencePinyin: getSentencePinyin(sentenceText),
       sentenceEnglish: getSentenceTranslation(sentenceText)
     };
     

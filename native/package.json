@@ -14,6 +14,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native/new-app-screen": "0.80.1",
+    "pinyin": "^4.0.0",
     "react": "19.1.0",
     "react-native": "0.80.1",
     "react-native-safe-area-context": "^5.5.2"
@@ -32,6 +33,7 @@
     "@react-native/metro-config": "0.80.1",
     "@react-native/typescript-config": "0.80.1",
     "@types/jest": "^29.5.13",
+    "@types/pinyin": "^2.10.2",
     "@types/react": "^19.1.0",
     "@types/react-test-renderer": "^19.1.0",
     "babel-loader": "^10.0.0",
