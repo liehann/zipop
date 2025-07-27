@@ -1,4 +1,4 @@
-// Core data structure interfaces for ZiPop app
+// Core data structure interfaces for ZiPop Chinese Reader App
 
 export interface Word {
   chinese: string;
@@ -6,48 +6,70 @@ export interface Word {
   english: string;
 }
 
-export interface Translation {
+export interface Sentence {
+  id: string;
   words: Word[];
+  startTime?: number; // For audio synchronization
+  endTime?: number;
 }
 
-export interface Line {
+export interface ChineseText {
   id: string;
-  translation: Translation;
+  title: string;
+  sentences: Sentence[];
+  audioUrl?: string; // Generated TTS audio URL
 }
 
-export interface Section {
-  id: string;
-  title: Translation;
-  lines: Line[];
+// Audio player state
+export interface AudioState {
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  playbackSpeed: number;
+  currentSentenceId: string | null;
 }
 
-export interface Document {
-  id: string;
-  title: Translation;
-  sections: Section[];
-}
-
-export interface Settings {
-  showChinese: boolean;
-  showPinyin: boolean;
-  showEnglish: boolean;
-}
-
-// Translation card interfaces
-export interface TranslationCardData {
-  word: string;
-  translation: {
+// Translation bar state
+export interface TranslationBarState {
+  type: 'sentence' | 'word' | 'character';
+  content: {
     chinese: string;
     pinyin: string;
     english: string;
   };
-  position: { x: number; y: number };
-  language: 'chinese' | 'pinyin' | 'english';
+  visible: boolean;
 }
 
-export interface TranslationCardProps {
-  visible: boolean;
-  data: TranslationCardData | null;
+// App settings
+export interface Settings {
+  playbackSpeed: number;
+  autoScroll: boolean;
+  fontSize: number;
+}
+
+// Audio player component props
+export interface AudioPlayerProps {
+  audioState: AudioState;
+  onPlay: () => void;
+  onPause: () => void;
+  onSeek: (time: number) => void;
+  onSpeedChange: (speed: number) => void;
+  isDarkMode: boolean;
+}
+
+// Translation bar component props
+export interface TranslationBarProps {
+  state: TranslationBarState;
   onClose: () => void;
+  isDarkMode: boolean;
+}
+
+// Main app props for text display
+export interface TextDisplayProps {
+  text: ChineseText;
+  audioState: AudioState;
+  onSentencePress: (sentence: Sentence) => void;
+  onWordPress: (word: Word) => void;
+  onCharacterPress: (character: string, word: Word) => void;
   isDarkMode: boolean;
 } 
