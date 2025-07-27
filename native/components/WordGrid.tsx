@@ -106,36 +106,36 @@ const WordGrid: React.FC<WordGridProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 12,
   },
   sentenceContainer: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   sentenceContent: {
     flexDirection: 'row',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
+    padding: 12,
   },
   sentenceIndicator: {
     width: 4,
     borderRadius: 2,
-    marginRight: 16,
-    minHeight: 60, // Ensures consistent spacing
+    marginRight: 12,
+    minHeight: 50, // Reduced from 60
   },
   wordsContainer: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8, // Reduced from 12
     alignItems: 'flex-start',
   },
   wordContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
-    minWidth: 60,
-    minHeight: 60,
+    padding: 8, // Reduced from 12
+    borderRadius: 6, // Reduced from 8
+    minWidth: 50, // Reduced from 60
+    minHeight: 50, // Reduced from 60
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
   },
@@ -152,13 +152,13 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   pinyinText: {
-    fontSize: 11,
+    fontSize: 18, // Increased from 11 to match hanzi size
     fontWeight: '400',
     textAlign: 'center',
-    marginBottom: 2,
+    marginBottom: 1, // Reduced from 2
   },
   hanziText: {
-    fontSize: 18,
+    fontSize: 18, // Same size as pinyin
     fontWeight: '600',
     fontFamily: 'System',
     textAlign: 'center',
