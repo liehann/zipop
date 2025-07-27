@@ -11,7 +11,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
   useColorScheme,
 } from 'react-native';
 
@@ -23,11 +22,7 @@ import {
   TranslationState,
 } from './types';
 import { sampleWordList } from './sampleData';
-
-const sampleText = Array(25).fill(
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
-);
-
+import WordGrid from './components/WordGrid';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -62,22 +57,90 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={[styles.container]}>
-       <View style={styles.header}>
-        <Text>Header</Text>
+    <SafeAreaView style={[styles.container, backgroundStyle]}>
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={isDarkMode ? '#2a2a2a' : '#ffffff'}
+        translucent={false}
+      />
+      
+      {/* FIXED HEADER */}
+      <View style={[
+        styles.header,
+        { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
+      ]}>
+        <Text style={[
+          styles.headerTitle,
+          { color: isDarkMode ? '#ffffff' : '#000000' }
+        ]}>
+          中文阅读器
+        </Text>
+        <Text style={[
+          styles.audioStatus,
+          { color: isDarkMode ? '#999999' : '#666666' }
+        ]}>
+          {audioState.isPlaying ? '▶︎' : '⏸'} {formatTime(audioState.currentTime)} / {formatTime(audioState.duration)}
+        </Text>
       </View>
-     <ScrollView contentContainerStyle={styles.scrollView} bounces={false}>
-        {sampleText.map((text) => {
-          return (
-            <View style={styles.paragraph}>
-              <Text>{text}</Text>
-            </View>
-          );
-        })}
+
+      {/* SCROLLABLE CONTENT */}
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollView}
+        showsVerticalScrollIndicator={true}
+        bounces={false}
+      >
+        <WordGrid
+          words={wordList.words}
+          selectedWordId={translationState.selectedWord?.id}
+          onWordPress={handleWordTap}
+        />
       </ScrollView>
-      <View style={styles.footer}>
-        <Text>Footer</Text>
-      </View>      
+
+      {/* FOOTER */}
+      <View style={[
+        styles.footer,
+        { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
+      ]}>
+        <Text style={[
+          styles.footerLabel,
+          { color: isDarkMode ? '#999999' : '#666666' }
+        ]}>
+          Translation
+        </Text>
+        
+        {translationState.selectedWord ? (
+          <View style={styles.translationContent}>
+            <View style={styles.translationHeader}>
+              <Text style={[
+                styles.translationHanzi,
+                { color: isDarkMode ? '#ffffff' : '#000000' }
+              ]}>
+                {translationState.selectedWord.hanzi}
+              </Text>
+              <Text style={[
+                styles.translationPinyin,
+                { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+              ]}>
+                {translationState.selectedWord.pinyin}
+              </Text>
+            </View>
+            <Text style={[
+              styles.translationEnglish,
+              { color: isDarkMode ? '#cccccc' : '#666666' }
+            ]}>
+              {translationState.selectedWord.english}
+            </Text>
+          </View>
+        ) : (
+          <Text style={[
+            styles.noTranslationText,
+            { color: isDarkMode ? '#666666' : '#999999' }
+          ]}>
+            Tap a word to see its translation
+          </Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -85,7 +148,15 @@ function App(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ecf0f1',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   headerTitle: {
     fontSize: 18,
@@ -95,36 +166,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  wordsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    gap: 16,
+  scrollView: {
+    flexGrow: 1,
   },
-  wordContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  footer: {
     padding: 16,
-    borderRadius: 12,
-    minWidth: 80,
-    minHeight: 80,
-    marginBottom: 16,
-  },
-  selectedWordContainer: {
-    borderWidth: 2,
-    borderColor: '#D2691E',
-  },
-  pinyinText: {
-    fontSize: 14,
-    fontWeight: '400',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  hanziText: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'System',
-    textAlign: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
   footerLabel: {
     fontSize: 12,
@@ -160,29 +208,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 20,
-  },
-  scrollView: {
-    flexGrow: 1,
-    borderColor: 'red',
-    borderWidth: 2,
-    paddingBottom: 100,
-  },
-  paragraph: {
-    padding: 10,
-  },
-  header: {
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: 'green',
-    borderWidth: 2,    
-  },
-  footer: {
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: 'blue',
-    borderWidth: 2,
   },
 });
 
