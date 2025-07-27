@@ -3,7 +3,7 @@
  * Simple word-based Chinese reader with fixed header and footer
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -28,9 +28,18 @@ function App(): React.JSX.Element {
     wordList,
     audioState,
     selectedWord,
+    currentSentenceId,
     selectWord,
+    setCurrentSentence,
     formatTime,
   } = useAppState();
+
+  // Set initial current sentence for demonstration
+  useEffect(() => {
+    if (wordList.sentences.length > 0 && !currentSentenceId) {
+      setCurrentSentence(wordList.sentences[0].id);
+    }
+  }, [wordList.sentences, currentSentenceId, setCurrentSentence]);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
@@ -71,8 +80,9 @@ function App(): React.JSX.Element {
         bounces={false}
       >
         <WordGrid
-          words={wordList.words}
+          sentences={wordList.sentences}
           selectedWordId={selectedWord?.id}
+          currentSentenceId={currentSentenceId}
           onWordPress={selectWord}
         />
       </ScrollView>

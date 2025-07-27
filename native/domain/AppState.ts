@@ -1,10 +1,11 @@
-import { WordListData, Word, AudioState, TranslationState } from '../types';
+import { WordListData, Word, AudioState, TranslationState, SentenceState } from '../types';
 import { sampleWordList } from '../sampleData';
 
 export class AppState {
   private wordList: WordListData;
   private audioState: AudioState;
   private translationState: TranslationState;
+  private sentenceState: SentenceState;
   private listeners: Set<() => void> = new Set();
 
   constructor() {
@@ -16,6 +17,9 @@ export class AppState {
     };
     this.translationState = {
       selectedWord: null,
+    };
+    this.sentenceState = {
+      currentSentenceId: null,
     };
   }
 
@@ -32,8 +36,16 @@ export class AppState {
     return this.translationState;
   }
 
+  getSentenceState(): SentenceState {
+    return this.sentenceState;
+  }
+
   getSelectedWord(): Word | null {
     return this.translationState.selectedWord;
+  }
+
+  getCurrentSentenceId(): string | null {
+    return this.sentenceState.currentSentenceId;
   }
 
   // Actions
@@ -49,6 +61,14 @@ export class AppState {
     this.translationState = {
       ...this.translationState,
       selectedWord: null,
+    };
+    this.notifyListeners();
+  }
+
+  setCurrentSentence(sentenceId: string | null): void {
+    this.sentenceState = {
+      ...this.sentenceState,
+      currentSentenceId: sentenceId,
     };
     this.notifyListeners();
   }

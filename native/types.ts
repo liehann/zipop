@@ -7,10 +7,15 @@ export interface Word {
   english: string;
 }
 
+export interface Sentence {
+  id: string;
+  words: Word[];
+}
+
 export interface WordListData {
   id: string;
   title: string;
-  words: Word[];
+  sentences: Sentence[];
 }
 
 // Audio player state - simplified
@@ -23,4 +28,9 @@ export interface AudioState {
 // Translation display state
 export interface TranslationState {
   selectedWord: Word | null;
+}
+
+// Sentence playback state
+export interface SentenceState {
+  currentSentenceId: string | null;
 } 
