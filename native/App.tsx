@@ -56,11 +56,11 @@ function App(): React.JSX.Element {
   };
 
   // Handle word long press
-  const handleWordLongPress = useCallback((event: any, word: string, translation: Translation, language: 'chinese' | 'pinyin' | 'english') => {
+  const handleWordLongPress = useCallback((event: any, word: string, wordObj: { chinese: string; pinyin: string; english: string }, language: 'chinese' | 'pinyin' | 'english') => {
     const { pageX, pageY } = event.nativeEvent;
     setTranslationCard({
       word,
-      translation,
+      translation: wordObj,
       position: { x: pageX, y: pageY },
       language,
     });
@@ -75,41 +75,39 @@ function App(): React.JSX.Element {
 
   // Handle gutter button press
   const handleGutterPress = useCallback((translation: Translation) => {
+    // Create a combined translation from all words
+    const combinedTranslation = {
+      chinese: translation.words.map(w => w.chinese).join(''),
+      pinyin: translation.words.map(w => w.pinyin).join(' '),
+      english: translation.words.map(w => w.english).join(' ')
+    };
+    
     setTranslationCard({
       word: 'Full Sentence',
-      translation,
+      translation: combinedTranslation,
       position: { x: 100, y: 200 },
       language: 'chinese',
     });
     setIsTranslationCardVisible(true);
   }, []);
 
-  // Render individual words with long press functionality
-  const renderTextWithLongPress = useCallback((text: string, translation: Translation, language: 'chinese' | 'pinyin' | 'english', textStyle: any) => {
-    let words: string[];
-    
-    if (language === 'chinese') {
-      // For Chinese, split by character
-      words = text.split('');
-    } else {
-      // For English and Pinyin, split by space
-      words = text.split(' ');
-    }
-    
+  // Render word with long press functionality
+  const renderWordWithLongPress = useCallback((word: { chinese: string; pinyin: string; english: string }, wordIndex: number, textStyle: any) => {
     return (
-      <Text style={textStyle}>
-        {words.map((word, index) => (
-          <Text key={index}>
-            <Pressable
-              onLongPress={(event) => handleWordLongPress(event, word, translation, language)}
-              delayLongPress={500}
-            >
-              <Text style={textStyle}>{word}</Text>
-            </Pressable>
-            {index < words.length - 1 && (language === 'chinese' ? '' : ' ')}
-          </Text>
-        ))}
-      </Text>
+      <Pressable
+        key={wordIndex}
+        onLongPress={(event) => handleWordLongPress(event, word.chinese, word, 'chinese')}
+        delayLongPress={500}
+      >
+        <Text style={textStyle}>
+          {word.chinese}
+          {word.pinyin && (
+            <Text style={[textStyle, styles.pinyinInline]}>
+              {' (' + word.pinyin + ')'}
+            </Text>
+          )}
+        </Text>
+      </Pressable>
     );
   }, [handleWordLongPress]);
 
@@ -127,34 +125,28 @@ function App(): React.JSX.Element {
 
       {/* Translation Content */}
       <View style={styles.translationContainer}>
-        {settings.showChinese && (
-          <View style={styles.languageRow}>
-            {renderTextWithLongPress(
-              translation.chinese,
-              translation,
-              'chinese',
-              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }]
-            )}
+        {/* Chinese + Pinyin words inline */}
+        {(settings.showChinese || settings.showPinyin) && (
+          <View style={styles.wordsRow}>
+            {translation.words.map((word, index) => (
+              <View key={index} style={styles.wordContainer}>
+                {renderWordWithLongPress(
+                  word, 
+                  index, 
+                  [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }]
+                )}
+                {index < translation.words.length - 1 && <Text style={styles.wordSeparator}> </Text>}
+              </View>
+            ))}
           </View>
         )}
-        {settings.showPinyin && (
-          <View style={styles.languageRow}>
-            {renderTextWithLongPress(
-              translation.pinyin,
-              translation,
-              'pinyin',
-              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }, styles.pinyinStyle]
-            )}
-          </View>
-        )}
+        
+        {/* English translation on separate line */}
         {settings.showEnglish && (
-          <View style={styles.languageRow}>
-            {renderTextWithLongPress(
-              translation.english,
-              translation,
-              'english',
-              [styles.languageText, { color: isDarkMode ? '#ffffff' : '#000000' }]
-            )}
+          <View style={styles.englishRow}>
+            <Text style={[styles.englishText, { color: isDarkMode ? '#cccccc' : '#666666' }]}>
+              {translation.words.map(w => w.english).join(' ')}
+            </Text>
           </View>
         )}
       </View>
@@ -165,17 +157,17 @@ function App(): React.JSX.Element {
     <View style={styles.documentTitleContainer}>
       {settings.showChinese && (
         <Text style={[styles.documentTitle, {color: isDarkMode ? '#ffffff' : '#000000'}]}>
-          {title.chinese}
+          {title.words.map(w => w.chinese).join('')}
         </Text>
       )}
       {settings.showPinyin && (
         <Text style={[styles.documentTitlePinyin, {color: isDarkMode ? '#cccccc' : '#666666'}]}>
-          {title.pinyin}
+          {title.words.map(w => w.pinyin).join(' ')}
         </Text>
       )}
       {settings.showEnglish && (
         <Text style={[styles.documentTitleEnglish, {color: isDarkMode ? '#888888' : '#777777'}]}>
-          {title.english}
+          {title.words.map(w => w.english).join(' ')}
         </Text>
       )}
     </View>
@@ -185,17 +177,17 @@ function App(): React.JSX.Element {
     <View style={styles.sectionTitleContainer}>
       {settings.showChinese && (
         <Text style={[styles.sectionTitle, {color: isDarkMode ? '#ffffff' : '#000000'}]}>
-          {title.chinese}
+          {title.words.map(w => w.chinese).join('')}
         </Text>
       )}
       {settings.showPinyin && (
         <Text style={[styles.sectionTitlePinyin, {color: isDarkMode ? '#cccccc' : '#666666'}]}>
-          {title.pinyin}
+          {title.words.map(w => w.pinyin).join(' ')}
         </Text>
       )}
       {settings.showEnglish && (
         <Text style={[styles.sectionTitleEnglish, {color: isDarkMode ? '#888888' : '#777777'}]}>
-          {title.english}
+          {title.words.map(w => w.english).join(' ')}
         </Text>
       )}
     </View>
@@ -309,10 +301,10 @@ function App(): React.JSX.Element {
                     onPress={() => selectDocument(doc)}
                   >
                     <Text style={[styles.documentOptionText, {color: isDarkMode ? '#ffffff' : '#000000'}]}>
-                      {doc.title.chinese}
+                      {doc.title.words.map(w => w.chinese).join('')}
                     </Text>
                     <Text style={[styles.documentOptionSubtext, {color: isDarkMode ? '#cccccc' : '#666666'}]}>
-                      {doc.title.english}
+                      {doc.title.words.map(w => w.english).join(' ')}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -605,6 +597,34 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     lineHeight: 26,
     fontFamily: 'System',
+  },
+  
+  // New word-based display styles
+  wordsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  wordContainer: {
+    marginRight: 4,
+  },
+  wordSeparator: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  pinyinInline: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    opacity: 0.8,
+  },
+  englishRow: {
+    marginTop: 4,
+  },
+  englishText: {
+    fontSize: 16,
+    fontWeight: '400',
+    lineHeight: 22,
+    fontStyle: 'italic',
   },
 });
 

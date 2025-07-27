@@ -1,4 +1,70 @@
-import { Document, Translation } from './types';
+import { Document, Translation, Word } from './types';
+
+// Helper function to split text into word groups based on pinyin
+function createWordsFromSentence(chinese: string, pinyin: string, english: string): Word[] {
+  // Split pinyin by spaces to get individual words
+  const pinyinWords = pinyin.split(/\s+/).filter(word => word.trim());
+  const englishWords = english.split(/\s+/).filter(word => word.trim());
+  
+  const words: Word[] = [];
+  let chineseIndex = 0;
+  
+  for (let i = 0; i < pinyinWords.length; i++) {
+    const pinyinWord = pinyinWords[i];
+    
+    // Estimate Chinese characters for this pinyin word
+    // Most pinyin words correspond to 1-3 Chinese characters
+    let chineseChars = '';
+    const estimatedLength = Math.max(1, Math.min(3, Math.ceil(pinyinWord.length / 3)));
+    
+    for (let j = 0; j < estimatedLength && chineseIndex < chinese.length; j++) {
+      const char = chinese[chineseIndex];
+      // Skip punctuation and spaces
+      if (char.match(/[\u4e00-\u9fff]/)) {
+        chineseChars += char;
+        chineseIndex++;
+      } else if (char.match(/[.,!?;:，。！？；：]/)) {
+        chineseChars += char;
+        chineseIndex++;
+        break; // Stop at punctuation
+      } else {
+        chineseIndex++;
+      }
+    }
+    
+    // If we have remaining Chinese characters and this is the last pinyin word,
+    // include all remaining characters
+    if (i === pinyinWords.length - 1 && chineseIndex < chinese.length) {
+      chineseChars += chinese.slice(chineseIndex);
+    }
+    
+    // Try to match English words to Chinese/Pinyin words
+    // For now, use a simple distribution approach
+    const englishWordsPerPinyin = Math.ceil(englishWords.length / pinyinWords.length);
+    const startIdx = i * englishWordsPerPinyin;
+    const endIdx = Math.min(startIdx + englishWordsPerPinyin, englishWords.length);
+    const englishPart = englishWords.slice(startIdx, endIdx).join(' ');
+    
+    if (chineseChars || pinyinWord) {
+      words.push({
+        chinese: chineseChars,
+        pinyin: pinyinWord,
+        english: englishPart || ''
+      });
+    }
+  }
+  
+  // Fallback: if no words were created, create a single word with the full sentence
+  if (words.length === 0) {
+    words.push({
+      chinese: chinese,
+      pinyin: pinyin,
+      english: english
+    });
+  }
+  
+  return words;
+}
 
 // Simple markdown-style format for easier content management
 const sampleDataMarkdown = `
@@ -95,10 +161,13 @@ function parseMarkdownToDocuments(markdown: string): Document[] {
     
     // Parse document title (first 3 lines starting with #)
     const titleLines = lines.slice(0, 3);
+    const documentTitleWords = createWordsFromSentence(
+      titleLines[0].replace(/^#\s*/, '').trim(),
+      titleLines[1].replace(/^#\s*/, '').trim(),
+      titleLines[2].replace(/^#\s*/, '').trim()
+    );
     const documentTitle: Translation = {
-      chinese: titleLines[0].replace(/^#\s*/, '').trim(),
-      pinyin: titleLines[1].replace(/^#\s*/, '').trim(),
-      english: titleLines[2].replace(/^#\s*/, '').trim()
+      words: documentTitleWords
     };
     
     const document: Document = {
@@ -122,10 +191,13 @@ function parseMarkdownToDocuments(markdown: string): Document[] {
         }
         
         const sectionTitleLines = lines.slice(i, i + 3);
+        const sectionTitleWords = createWordsFromSentence(
+          sectionTitleLines[0].replace(/^##\s*/, '').trim(),
+          sectionTitleLines[1].replace(/^##\s*/, '').trim(),
+          sectionTitleLines[2].replace(/^##\s*/, '').trim()
+        );
         const sectionTitle: Translation = {
-          chinese: sectionTitleLines[0].replace(/^##\s*/, '').trim(),
-          pinyin: sectionTitleLines[1].replace(/^##\s*/, '').trim(),
-          english: sectionTitleLines[2].replace(/^##\s*/, '').trim()
+          words: sectionTitleWords
         };
         
         currentSection = {
@@ -141,10 +213,14 @@ function parseMarkdownToDocuments(markdown: string): Document[] {
         const translationLines = lines.slice(i, i + 3);
         
         if (translationLines.length === 3) {
+          const words = createWordsFromSentence(
+            translationLines[0].trim(),
+            translationLines[1].trim(), 
+            translationLines[2].trim()
+          );
+          
           const translation: Translation = {
-            chinese: translationLines[0].trim(),
-            pinyin: translationLines[1].trim(),
-            english: translationLines[2].trim()
+            words: words
           };
           
           currentSection.lines.push({

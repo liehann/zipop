@@ -1,9 +1,13 @@
 // Core data structure interfaces for ZiPop app
 
-export interface Translation {
+export interface Word {
   chinese: string;
   pinyin: string;
   english: string;
+}
+
+export interface Translation {
+  words: Word[];
 }
 
 export interface Line {
@@ -32,7 +36,11 @@ export interface Settings {
 // Translation card interfaces
 export interface TranslationCardData {
   word: string;
-  translation: Translation;
+  translation: {
+    chinese: string;
+    pinyin: string;
+    english: string;
+  };
   position: { x: number; y: number };
   language: 'chinese' | 'pinyin' | 'english';
 }
