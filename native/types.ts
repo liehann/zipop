@@ -10,12 +10,17 @@ export interface Word {
 export interface Sentence {
   id: string;
   words: Word[];
+  // Full sentence translations
+  sentencePinyin?: string;
+  sentenceEnglish?: string;
 }
 
 export interface WordListData {
   id: string;
   title: string;
   sentences: Sentence[];
+  dateCreated?: string;
+  dateModified?: string;
 }
 
 // Audio player state - simplified
@@ -34,4 +39,19 @@ export interface TranslationState {
 // Sentence playback state
 export interface SentenceState {
   currentSentenceId: string | null;
+}
+
+// App navigation state
+export interface AppViewState {
+  currentView: 'reader' | 'addText' | 'chooseText';
+}
+
+// Storage format for saved documents
+export interface SavedDocument {
+  id: string;
+  title: string;
+  originalText: string;
+  wordListData: WordListData;
+  dateCreated: string;
+  dateModified: string;
 } 

@@ -12,6 +12,7 @@ module.exports = {
   resolve: {
     alias: {
       'react-native$': 'react-native-web',
+      '@react-native-async-storage/async-storage': path.resolve(__dirname, 'utils/asyncStorageWeb.js'),
     },
     extensions: ['.web.js', '.js', '.web.ts', '.ts', '.web.tsx', '.tsx', '.json'],
   },

@@ -1,11 +1,13 @@
-import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence } from '../types';
+import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence, AppViewState, SavedDocument } from '../types';
 import { sampleWordList } from '../sampleData';
+import { saveDocument, setCurrentDocument } from '../utils/storage';
 
 export class AppState {
   private wordList: WordListData;
   private audioState: AudioState;
   private translationState: TranslationState;
   private sentenceState: SentenceState;
+  private appViewState: AppViewState;
   private listeners: Set<() => void> = new Set();
 
   constructor() {
@@ -21,6 +23,9 @@ export class AppState {
     };
     this.sentenceState = {
       currentSentenceId: null,
+    };
+    this.appViewState = {
+      currentView: 'reader',
     };
   }
 
@@ -39,6 +44,14 @@ export class AppState {
 
   getSentenceState(): SentenceState {
     return this.sentenceState;
+  }
+
+  getAppViewState(): AppViewState {
+    return this.appViewState;
+  }
+
+  getCurrentView(): AppViewState['currentView'] {
+    return this.appViewState.currentView;
   }
 
   getSelectedWord(): Word | null {
@@ -87,6 +100,65 @@ export class AppState {
       currentSentenceId: sentenceId,
     };
     this.notifyListeners();
+  }
+
+  // Navigation actions
+  setCurrentView(view: AppViewState['currentView']): void {
+    this.appViewState = {
+      ...this.appViewState,
+      currentView: view,
+    };
+    this.notifyListeners();
+  }
+
+  goToReader(): void {
+    this.setCurrentView('reader');
+  }
+
+  goToAddText(): void {
+    this.setCurrentView('addText');
+  }
+
+  goToChooseText(): void {
+    this.setCurrentView('chooseText');
+  }
+
+  // Document management
+  async loadDocument(document: SavedDocument): Promise<void> {
+    try {
+      this.wordList = document.wordListData;
+      
+      // Set current document in storage
+      await setCurrentDocument(document.id);
+      
+      // Set first sentence as current if available
+      if (document.wordListData.sentences.length > 0) {
+        this.setCurrentSentence(document.wordListData.sentences[0].id);
+      }
+      
+      // Clear any selections
+      this.clearSelection();
+      
+      // Go to reader view
+      this.goToReader();
+      
+      this.notifyListeners();
+    } catch (error) {
+      console.error('Failed to load document:', error);
+      throw new Error('Failed to load document');
+    }
+  }
+
+  async saveCurrentDocument(document: SavedDocument): Promise<void> {
+    try {
+      await saveDocument(document);
+      
+      // Load the saved document
+      await this.loadDocument(document);
+    } catch (error) {
+      console.error('Failed to save document:', error);
+      throw new Error('Failed to save document');
+    }
   }
 
   toggleAudioPlayback(): void {
