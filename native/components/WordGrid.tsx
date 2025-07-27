@@ -37,7 +37,11 @@ const WordGrid: React.FC<WordGridProps> = ({
           {
             backgroundColor: isSelected
               ? (isDarkMode ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 215, 0, 0.15)') // Golden glow
-              : 'transparent'
+              : 'transparent', // Transparent to inherit sentence background
+            borderColor: isSelected 
+              ? '#FFD700' 
+              : 'transparent', // Transparent border when unselected
+            borderWidth: 1 // Consistent border width to maintain stable height
           }
         ]}
         onPress={() => onWordPress(word)}
@@ -98,7 +102,10 @@ const WordGrid: React.FC<WordGridProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      { backgroundColor: isDarkMode ? '#2a2a2a' : '#fafafa' } // Light background closer to white
+    ]}>
       {sentences.map(renderSentence)}
     </View>
   );
@@ -107,18 +114,19 @@ const WordGrid: React.FC<WordGridProps> = ({
 const styles = StyleSheet.create({
   container: {
     padding: 12,
+    // Background color now set dynamically in component
   },
   sentenceContainer: {
-    marginBottom: 16,
+    marginBottom: 0, // Reduced from 16 to 8 for tighter vertical spacing
   },
   sentenceContent: {
     flexDirection: 'row',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 3,
+    padding: 0,
   },
   sentenceIndicator: {
     width: 4,
-    borderRadius: 2,
+    borderRadius: 3,
     marginRight: 12,
     minHeight: 50, // Reduced from 60
   },
@@ -126,22 +134,20 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8, // Reduced from 12
+    gap: 0, // Reduced from 12
     alignItems: 'flex-start',
   },
   wordContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8, // Reduced from 12
-    borderRadius: 6, // Reduced from 8
-    minWidth: 50, // Reduced from 60
-    minHeight: 50, // Reduced from 60
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    padding: 3, // Reduced from 12
+    borderRadius: 3, // Reduced from 8
+    minWidth: 40, // Reduced from 60
+    minHeight: 40, // Reduced from 60
+    // borderWidth and borderColor now set dynamically
   },
   selectedWordContainer: {
-    borderWidth: 2,
-    borderColor: '#FFD700', // Golden border for selected word
+    // Border color now handled dynamically in component
     shadowColor: '#FFD700',
     shadowOffset: {
       width: 0,
