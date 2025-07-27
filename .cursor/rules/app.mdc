@@ -1,0 +1,93 @@
+---
+alwaysApply: true
+---
+
+# ZiPop - Multilingual Reading App
+
+## Overview
+ZiPop is a React Native multilingual reading app designed for Chinese language learning. It displays content in three parallel formats: Chinese characters, Pinyin (romanization), and English translations. The app is built with TypeScript and supports iOS, Android, and Web platforms.
+
+## Technical Stack
+- **Framework**: React Native 0.80.1 with React 19.1.0
+- **Language**: TypeScript 5.0.4
+- **Platforms**: iOS, Android, Web (via React Native Web + Webpack)
+- **Build Tools**: Metro (mobile), Webpack (web)  
+- **Testing**: Jest with React Test Renderer
+
+## Core Data Structure
+The app follows a hierarchical document structure:
+- **Document**: Contains title (Translation) and sections array
+- **Section**: Contains title (Translation) and lines array  
+- **Line**: Contains a single Translation object
+- **Translation**: Core interface with `chinese`, `pinyin`, `english` string properties
+
+## Key Features
+1. **Triple Language Display**: Chinese, Pinyin, English shown simultaneously
+2. **Language Toggle Settings**: Users can show/hide any combination of the three languages
+3. **Interactive Text**: Long-press on individual words/characters shows translation cards
+4. **Document Navigation**: Hamburger menu system for switching between multiple documents
+5. **Translation Cards**: Modal popups showing full translation context for selected text
+6. **Dark/Light Mode**: Automatic theme switching based on system preferences
+7. **Responsive Design**: Adapts to different screen sizes and orientations
+
+## Current Implementation Status
+- ✅ Complete core reading interface with proper typography and spacing
+- ✅ Settings menu with language toggle switches
+- ✅ Document selection system with multiple lessons
+- ✅ Interactive word translation cards with positioning logic
+- ✅ Dark/light mode support with proper color schemes
+- ✅ Web platform support via React Native Web
+- ✅ Sample data with 3 documents covering practical scenarios
+- ✅ Responsive layout with gutter buttons and proper touch targets
+
+## File Structure
+- **`native/App.tsx`**: Main application component with all state management and UI logic
+- **`native/components/TranslationCard.tsx`**: Modal component for displaying word translations
+- **`native/types.ts`**: TypeScript interfaces for all data structures
+- **`native/sampleData.ts`**: Markdown-style parser and sample content (3 lessons)
+- **`native/webpack.config.js`**: Web platform build configuration
+- **`native/index.web.js`**: Web platform entry point
+- **`native/public/index.html`**: HTML template for web deployment
+
+## Sample Content
+Currently includes 3 lesson documents:
+1. **My First Lesson** (我的第一课) - Basic greetings and self-introduction
+2. **At the Restaurant** (在餐厅) - Ordering food and dining vocabulary
+3. **Shopping** (购物) - Buying clothes and retail interactions
+
+## Development Workflow
+- **Mobile**: `npm run ios` or `npm run android` 
+- **Web**: `npm run web` (runs on http://localhost:3001)
+- **Development Server**: `npm run start` (Metro bundler)
+- **Testing**: `npm run test` (Jest test suite)
+- **Build Web**: `npm run build:web` (production build)
+
+## User Experience Features
+- Intuitive hamburger menu navigation (☰)
+- Smooth modal animations for translation cards
+- Proper safe area handling for different devices
+- Touch-optimized with appropriate press delays (500ms for long-press)
+- Visual feedback for all interactive elements
+- Consistent spacing using StyleSheet.create
+- Responsive card positioning that stays within screen bounds
+
+## Data Management
+- Uses markdown-style format for easy content management
+- Parser function converts human-readable format to structured Document objects
+- Local state management with React hooks (useState, useCallback)
+- Settings persist in component state (can be extended to AsyncStorage)
+
+## Styling Architecture
+- All styles use StyleSheet.create for performance
+- Responsive design with Dimensions API for screen awareness  
+- Platform-specific adjustments for iOS/Android/Web compatibility
+- Consistent color schemes for dark/light modes
+- Typography scales optimized for multilingual content
+- Proper Chinese character rendering with system fonts
+
+## Future Expansion Ready
+- Document structure supports nested sections and metadata
+- Translation card system extensible for audio/pronunciation features
+- Settings system designed for additional preferences
+- Web platform enables potential online content delivery
+- Architecture supports adding more languages beyond Chinese/Pinyin/English
