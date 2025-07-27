@@ -26,10 +26,12 @@ export const useAppState = () => {
     translationState: appState.getTranslationState(),
     sentenceState: appState.getSentenceState(),
     selectedWord: appState.getSelectedWord(),
+    selectedSentence: appState.getSelectedSentence(),
     currentSentenceId: appState.getCurrentSentenceId(),
     
     // Actions
     selectWord: appState.selectWord.bind(appState),
+    selectSentence: appState.selectSentence.bind(appState),
     clearSelection: appState.clearSelection.bind(appState),
     setCurrentSentence: appState.setCurrentSentence.bind(appState),
     toggleAudioPlayback: appState.toggleAudioPlayback.bind(appState),

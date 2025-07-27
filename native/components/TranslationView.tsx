@@ -5,18 +5,33 @@ import {
   StyleSheet,
   useColorScheme,
 } from 'react-native';
-import { Word } from '../types';
+import { Word, Sentence } from '../types';
 
 interface TranslationViewProps {
   selectedWord: Word | null;
+  selectedSentence: Sentence | null;
   onClose?: () => void;
 }
 
 const TranslationView: React.FC<TranslationViewProps> = ({
   selectedWord,
+  selectedSentence,
   onClose,
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
+
+  // Helper function to combine sentence words into full translations
+  const getSentenceTranslation = (sentence: Sentence) => {
+    const pinyinText = sentence.words.map(word => word.pinyin).join(' ');
+    const hanziText = sentence.words.map(word => word.hanzi).join('');
+    const englishText = sentence.words.map(word => word.english).join(' ');
+    
+    return {
+      pinyin: pinyinText,
+      hanzi: hanziText,
+      english: englishText,
+    };
+  };
 
   return (
     <View style={[
@@ -30,8 +45,45 @@ const TranslationView: React.FC<TranslationViewProps> = ({
         Translation
       </Text>
       
-      {selectedWord ? (
+      {selectedSentence ? (
+        // Show sentence translation
         <View style={styles.translationContent}>
+          <Text style={[
+            styles.typeLabel,
+            { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+          ]}>
+            Sentence
+          </Text>
+          <View style={styles.translationHeader}>
+            <Text style={[
+              styles.hanziText,
+              { color: isDarkMode ? '#ffffff' : '#000000' }
+            ]}>
+              {getSentenceTranslation(selectedSentence).hanzi}
+            </Text>
+            <Text style={[
+              styles.pinyinText,
+              { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+            ]}>
+              {getSentenceTranslation(selectedSentence).pinyin}
+            </Text>
+          </View>
+          <Text style={[
+            styles.englishText,
+            { color: isDarkMode ? '#cccccc' : '#666666' }
+          ]}>
+            {getSentenceTranslation(selectedSentence).english}
+          </Text>
+        </View>
+      ) : selectedWord ? (
+        // Show word translation
+        <View style={styles.translationContent}>
+          <Text style={[
+            styles.typeLabel,
+            { color: isDarkMode ? '#ffd700' : '#b8860b' }
+          ]}>
+            Word
+          </Text>
           <View style={styles.translationHeader}>
             <Text style={[
               styles.hanziText,
@@ -58,7 +110,7 @@ const TranslationView: React.FC<TranslationViewProps> = ({
           styles.placeholderText,
           { color: isDarkMode ? '#666666' : '#999999' }
         ]}>
-          Tap a word to see its translation
+          Tap a word or sentence to see its translation
         </Text>
       )}
     </View>
@@ -79,6 +131,12 @@ const styles = StyleSheet.create({
   },
   translationContent: {
     // Content container
+  },
+  typeLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 8,
   },
   translationHeader: {
     flexDirection: 'row',

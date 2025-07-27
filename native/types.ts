@@ -25,9 +25,10 @@ export interface AudioState {
   duration: number;
 }
 
-// Translation display state
+// Translation display state - supports both word and sentence translations
 export interface TranslationState {
   selectedWord: Word | null;
+  selectedSentence: Sentence | null;
 }
 
 // Sentence playback state

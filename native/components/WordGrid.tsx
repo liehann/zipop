@@ -13,6 +13,7 @@ interface WordGridProps {
   selectedWordId?: string;
   currentSentenceId?: string | null;
   onWordPress: (word: Word) => void;
+  onSentencePress: (sentence: Sentence) => void;
 }
 
 const WordGrid: React.FC<WordGridProps> = ({
@@ -20,6 +21,7 @@ const WordGrid: React.FC<WordGridProps> = ({
   selectedWordId,
   currentSentenceId,
   onWordPress,
+  onSentencePress,
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -64,14 +66,18 @@ const WordGrid: React.FC<WordGridProps> = ({
     
     return (
       <View key={sentence.id} style={styles.sentenceContainer}>
-        <View style={[
-          styles.sentenceContent,
-          {
-            backgroundColor: isCurrentSentence 
-              ? (isDarkMode ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)')
-              : 'transparent'
-          }
-        ]}>
+        <TouchableOpacity
+          style={[
+            styles.sentenceContent,
+            {
+              backgroundColor: isCurrentSentence 
+                ? (isDarkMode ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)')
+                : 'transparent'
+            }
+          ]}
+          onPress={() => onSentencePress(sentence)}
+          activeOpacity={0.7}
+        >
           {/* Vertical bar indicator for current sentence */}
           <View style={[
             styles.sentenceIndicator,
@@ -86,7 +92,7 @@ const WordGrid: React.FC<WordGridProps> = ({
           <View style={styles.wordsContainer}>
             {sentence.words.map(renderWord)}
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   };

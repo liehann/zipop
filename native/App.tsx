@@ -28,8 +28,10 @@ function App(): React.JSX.Element {
     wordList,
     audioState,
     selectedWord,
+    selectedSentence,
     currentSentenceId,
     selectWord,
+    selectSentence,
     setCurrentSentence,
     formatTime,
   } = useAppState();
@@ -84,11 +86,15 @@ function App(): React.JSX.Element {
           selectedWordId={selectedWord?.id}
           currentSentenceId={currentSentenceId}
           onWordPress={selectWord}
+          onSentencePress={selectSentence}
         />
       </ScrollView>
 
       {/* FOOTER */}
-      <TranslationView selectedWord={selectedWord} />
+      <TranslationView 
+        selectedWord={selectedWord} 
+        selectedSentence={selectedSentence}
+      />
     </SafeAreaView>
   );
 }

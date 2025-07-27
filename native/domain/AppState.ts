@@ -1,4 +1,4 @@
-import { WordListData, Word, AudioState, TranslationState, SentenceState } from '../types';
+import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence } from '../types';
 import { sampleWordList } from '../sampleData';
 
 export class AppState {
@@ -17,6 +17,7 @@ export class AppState {
     };
     this.translationState = {
       selectedWord: null,
+      selectedSentence: null,
     };
     this.sentenceState = {
       currentSentenceId: null,
@@ -44,6 +45,10 @@ export class AppState {
     return this.translationState.selectedWord;
   }
 
+  getSelectedSentence(): Sentence | null {
+    return this.translationState.selectedSentence;
+  }
+
   getCurrentSentenceId(): string | null {
     return this.sentenceState.currentSentenceId;
   }
@@ -53,6 +58,16 @@ export class AppState {
     this.translationState = {
       ...this.translationState,
       selectedWord: word,
+      selectedSentence: null, // Clear sentence selection when selecting a word
+    };
+    this.notifyListeners();
+  }
+
+  selectSentence(sentence: Sentence): void {
+    this.translationState = {
+      ...this.translationState,
+      selectedWord: null, // Clear word selection when selecting a sentence
+      selectedSentence: sentence,
     };
     this.notifyListeners();
   }
@@ -61,6 +76,7 @@ export class AppState {
     this.translationState = {
       ...this.translationState,
       selectedWord: null,
+      selectedSentence: null,
     };
     this.notifyListeners();
   }
