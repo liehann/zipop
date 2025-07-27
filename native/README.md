@@ -1,97 +1,193 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# ZiPop - Multilingual Reading App
 
-# Getting Started
+## Overview
+ZiPop is a React Native multilingual reading app designed for Chinese language learning. It displays Chinese words with Pinyin romanization above each character, and shows English translations when words are tapped. The app is built with TypeScript and supports iOS, Android, and Web platforms.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Technical Stack
+- **Framework**: React Native 0.80.1 with React 19.1.0
+- **Language**: TypeScript 5.0.4
+- **Platforms**: iOS, Android, Web (via React Native Web + Webpack)
+- **Build Tools**: Metro (mobile), Webpack (web)  
+- **Testing**: Jest with React Test Renderer
+- **Architecture**: Clean architecture with domain layer separation
 
-## Step 1: Start Metro
+## Architecture
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### Clean Separation of Concerns
+The app follows a clean architecture pattern with clear separation between UI, business logic, and data:
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+**🏗️ Domain Layer** (`domain/AppState.ts`)
+- Centralized state management using observer pattern
+- Business logic for word selection and audio control
+- No UI dependencies - fully testable
 
-```sh
-# Using npm
-npm start
+**🎯 Components** (`components/`)
+- `WordGrid.tsx` - Displays Chinese words with Pinyin in a responsive grid
+- `TranslationView.tsx` - Shows selected word translations in footer
+- Independent, reusable components with clear interfaces
 
-# OR using Yarn
-yarn start
+**🔗 Hooks** (`hooks/useAppState.ts`)
+- Custom hook connecting React components to domain layer
+- Automatic re-renders on state changes
+- Clean subscription management
+
+**📱 App.tsx** (< 100 lines)
+- Pure layout structure (header, scrollable content, footer)
+- No business logic - only UI composition
+
+## Core Data Structure
+The app uses a simple, flat word-based structure:
+
+```typescript
+interface Word {
+  id: string;
+  pinyin: string;    // Romanization (e.g., "nǐ hǎo")
+  hanzi: string;     // Chinese characters (e.g., "你好")
+  english: string;   // Translation (e.g., "hello")
+}
 ```
 
-## Step 2: Build and run your app
+## Key Features
+1. **Word-Based Learning**: Focus on individual vocabulary with clear pinyin-to-hanzi mapping
+2. **Interactive Grid**: Tappable word cards with visual selection feedback
+3. **Instant Translation**: Bottom footer shows translation details when words are tapped
+4. **Audio Status Display**: Header shows playback time and controls
+5. **Dark/Light Mode**: Automatic theme switching based on system preferences
+6. **Responsive Design**: Adapts to different screen sizes and orientations
+7. **Cross-Platform**: Single codebase for iOS, Android, and Web
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Layout Structure
 
-### Android
+### Critical: Flexbox Requirements
+**⚠️ Important for Web Platform**: The `index.html` file must have proper flexbox constraints for the layout to work correctly:
 
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```html
+<html style="height: 100%;">
+<head>...</head>
+<body style="height: 100%; margin: 0;">
+  <div id="app-root" style="height: 100%; display: flex; flex-direction: column;"></div>
+</body>
+</html>
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+### Component Layout
+```
+┌─────────────────────┐
+│      Header         │ (Fixed height)
+│  中文阅读器 + Audio  │
+├─────────────────────┤
+│                     │
+│   ScrollView        │ (flex: 1)
+│   WordGrid          │
+│   (Scrollable)      │
+│                     │
+├─────────────────────┤
+│ TranslationView     │ (Fixed height)
+│   Footer            │
+└─────────────────────┘
 ```
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
+## File Structure
+```
+native/
+├── App.tsx                    # Main layout component (< 100 lines)
+├── domain/
+│   └── AppState.ts           # Business logic & state management
+├── hooks/
+│   └── useAppState.ts        # React-domain layer connector
+├── components/
+│   ├── WordGrid.tsx          # Chinese word display grid
+│   └── TranslationView.tsx   # Translation footer component
+├── types.ts                  # TypeScript interfaces
+├── sampleData.ts             # Sample vocabulary data
+├── index.html                # Web HTML with flexbox constraints
+├── index.js                  # Native app entry point
+├── index.web.js              # Web app entry point
+└── webpack.config.js         # Web build configuration
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Sample Content
+Currently includes 20 basic Chinese words covering:
+- Greetings (你好, 谢谢, 再见)
+- Basic pronouns (我, 你, 他, 她)
+- Question words (什么, 哪儿, 谁, 为什么)
+- Common adjectives (好, 大, 小)
 
-```sh
-# Using npm
+## Development Workflow
+
+### Mobile Development
+```bash
+# iOS
 npm run ios
 
-# OR using Yarn
-yarn ios
+# Android  
+npm run android
+
+# Metro bundler
+npm run start
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### Web Development
+```bash
+# Development server (localhost:3001)
+npm run web
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+# Production build
+npm run build:web
+```
 
-## Step 3: Modify your app
+### Testing
+```bash
+npm run test
+```
 
-Now that you have successfully run the app, let's make changes!
+## User Experience Features
+- **Grid Layout**: Chinese characters with pinyin above in responsive cards
+- **Visual Feedback**: Selected words highlighted with orange border
+- **Touch Optimized**: Proper touch targets for mobile devices
+- **Smooth Interactions**: Instant translation updates on word tap
+- **Consistent Theming**: Dark/light mode support across all components
+- **Safe Area Handling**: Proper layout on devices with notches
+- **Web Compatibility**: Full functionality in web browsers
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## State Management
+- **Observer Pattern**: Domain layer notifies components of state changes
+- **Immutable Updates**: State changes create new objects for predictable updates
+- **Centralized Logic**: All business logic contained in domain layer
+- **Type Safety**: Full TypeScript coverage with proper interfaces
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## Styling Architecture
+- **Component-Scoped**: Each component manages its own styles
+- **Responsive Design**: Flexbox layouts adapt to screen sizes
+- **Theme Support**: Dynamic colors based on system preferences
+- **Typography**: Optimized fonts for Chinese character rendering
+- **Cross-Platform**: Consistent appearance on iOS, Android, and Web
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Future Expansion Ready
+- **Audio Integration**: Architecture supports TTS and audio playback features
+- **Data Sources**: Easy to swap sample data for API or file-based content
+- **Component Extension**: Modular components can be enhanced independently
+- **Testing**: Domain layer separation enables comprehensive unit testing
+- **Scalability**: Clean architecture supports adding more complex features
 
-## Congratulations! :tada:
+## Development Notes
 
-You've successfully run and modified your React Native App. :partying_face:
+### Adding New Words
+Add to `sampleData.ts`:
+```typescript
+{
+  id: 'unique-id',
+  pinyin: 'pronunciation',
+  hanzi: '汉字',
+  english: 'translation'
+}
+```
 
-### Now what?
+### Extending Components
+Each component is self-contained and can be modified independently:
+- `WordGrid` for display customization
+- `TranslationView` for footer enhancements  
+- Domain layer for business logic changes
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Web Platform Setup
+Ensure `index.html` has proper flexbox styling for layout to work correctly. The container must have `height: 100%` and `display: flex; flex-direction: column` for the sticky footer pattern to function.
