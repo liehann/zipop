@@ -165,6 +165,9 @@ function App(): React.JSX.Element {
             <TranslationView 
               selectedWord={selectedWord} 
               selectedSentence={selectedSentence}
+              onSentenceSelect={(sentence) => {
+                setCurrentSentence(sentence.id);
+              }}
             />
           </>
         );
