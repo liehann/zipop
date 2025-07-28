@@ -11,6 +11,7 @@ import { Word, Sentence } from '../types';
 interface WordGridProps {
   sentences: Sentence[];
   selectedWordId?: string;
+  selectedSentenceId?: string | null;
   currentSentenceId?: string | null;
   onWordPress: (word: Word) => void;
   onSentencePress: (sentence: Sentence) => void;
@@ -19,6 +20,7 @@ interface WordGridProps {
 const WordGrid: React.FC<WordGridProps> = ({
   sentences,
   selectedWordId,
+  selectedSentenceId,
   currentSentenceId,
   onWordPress,
   onSentencePress,
@@ -67,6 +69,7 @@ const WordGrid: React.FC<WordGridProps> = ({
 
   const renderSentence = (sentence: Sentence) => {
     const isCurrentSentence = currentSentenceId === sentence.id;
+    const isSelectedSentence = selectedSentenceId === sentence.id;
     
     return (
       <View key={sentence.id} style={styles.sentenceContainer}>
@@ -74,9 +77,16 @@ const WordGrid: React.FC<WordGridProps> = ({
           style={[
             styles.sentenceContent,
             {
-              backgroundColor: isCurrentSentence 
-                ? (isDarkMode ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)')
-                : 'transparent'
+              backgroundColor: isSelectedSentence
+                ? (isDarkMode ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 215, 0, 0.15)') // Golden glow like selected words
+                : isCurrentSentence 
+                  ? (isDarkMode ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)')
+                  : 'transparent',
+              borderColor: isSelectedSentence
+                ? '#FFD700'
+                : 'transparent',
+              borderWidth: 1, // Match selected word border width (1px)
+              borderRadius: 6, // Always use same border radius
             }
           ]}
           onPress={() => onSentencePress(sentence)}

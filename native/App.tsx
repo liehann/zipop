@@ -155,6 +155,7 @@ function App(): React.JSX.Element {
               <WordGrid
                 sentences={wordList.sentences}
                 selectedWordId={selectedWord?.id}
+                selectedSentenceId={selectedSentence?.id}
                 currentSentenceId={currentSentenceId}
                 onWordPress={selectWord}
                 onSentencePress={selectSentence}
@@ -167,6 +168,7 @@ function App(): React.JSX.Element {
               selectedSentence={selectedSentence}
               onSentenceSelect={(sentence) => {
                 setCurrentSentence(sentence.id);
+                selectSentence(sentence);
               }}
             />
           </>
