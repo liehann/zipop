@@ -22,9 +22,9 @@ const TranslationView: React.FC<TranslationViewProps> = ({
 
   // Helper function to combine sentence words into full translations
   const getSentenceTranslation = (sentence: Sentence) => {
-    const pinyinText = sentence.words.map(word => word.pinyin).join(' ');
+    const pinyinText = sentence.sentencePinyin || sentence.words.map(word => word.pinyin).join(' ');
     const hanziText = sentence.words.map(word => word.hanzi).join('');
-    const englishText = sentence.words.map(word => word.english).join(' ');
+    const englishText = sentence.sentenceEnglish || sentence.words.map(word => word.english).join(' ');
     
     return {
       pinyin: pinyinText,
