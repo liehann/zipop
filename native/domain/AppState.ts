@@ -1,5 +1,5 @@
 import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence, AppViewState, SavedDocument } from '../types';
-import { sampleWordList } from '../sampleData';
+import { getLessonById, lessonToWordListData } from '../data/dataLoader';
 import { saveDocument, setCurrentDocument } from '../utils/storage';
 
 export class AppState {
@@ -11,7 +11,21 @@ export class AppState {
   private listeners: Set<() => void> = new Set();
 
   constructor() {
-    this.wordList = sampleWordList;
+    // Load beginner-greetings lesson as default
+    const beginnerGreetingsLesson = getLessonById('beginner-greetings');
+    if (beginnerGreetingsLesson) {
+      this.wordList = lessonToWordListData(beginnerGreetingsLesson);
+    } else {
+      // Fallback to empty data if lesson not found
+      this.wordList = {
+        id: 'empty',
+        title: 'No Content',
+        sentences: [],
+        dateCreated: new Date().toISOString(),
+        dateModified: new Date().toISOString()
+      };
+    }
+    
     this.audioState = {
       isPlaying: false,
       currentTime: 5, // 00:05

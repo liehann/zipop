@@ -23,8 +23,9 @@ export function toPinyin(text: string): string {
   
   try {
     const result = pinyin(text, pinyinOptions);
-    if (result && result.length > 0 && result[0] && result[0].length > 0) {
-      return result[0][0];
+    if (result && result.length > 0) {
+      // Join all characters' pinyin with spaces for multi-character words
+      return result.map(item => item[0] || '').filter(p => p).join(' ');
     }
     return text; // Return original if no pinyin found (likely not Chinese)
   } catch (error) {
@@ -71,8 +72,9 @@ export function toPinyinWithoutTones(text: string): string {
       segment: true,
       group: false,
     });
-    if (result && result.length > 0 && result[0] && result[0].length > 0) {
-      return result[0][0];
+    if (result && result.length > 0) {
+      // Join all characters' pinyin with spaces for multi-character words
+      return result.map(item => item[0] || '').filter(p => p).join(' ');
     }
     return text;
   } catch (error) {
@@ -97,8 +99,9 @@ export function toPinyinWithNumericTones(text: string): string {
       segment: true,
       group: false,
     });
-    if (result && result.length > 0 && result[0] && result[0].length > 0) {
-      return result[0][0];
+    if (result && result.length > 0) {
+      // Join all characters' pinyin with spaces for multi-character words
+      return result.map(item => item[0] || '').filter(p => p).join(' ');
     }
     return text;
   } catch (error) {

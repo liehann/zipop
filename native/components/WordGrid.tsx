@@ -140,11 +140,13 @@ const styles = StyleSheet.create({
   wordContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 3, // Reduced from 12
+    padding: 6, // Increased from 3 for better spacing with multi-char words
     borderRadius: 3, // Reduced from 8
-    minWidth: 40, // Reduced from 60
+    minWidth: 30, // Reduced from 40 to allow more flexible sizing
     minHeight: 40, // Reduced from 60
     // borderWidth and borderColor now set dynamically
+    // Allow dynamic width based on content
+    paddingHorizontal: 8, // More horizontal padding for multi-character words
   },
   selectedWordContainer: {
     // Border color now handled dynamically in component
@@ -158,16 +160,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   pinyinText: {
-    fontSize: 18, // Increased from 11 to match hanzi size
+    fontSize: 14, // Reduced from 18 to accommodate multi-character words
     fontWeight: '400',
     textAlign: 'center',
     marginBottom: 1, // Reduced from 2
+    flexShrink: 1, // Allow text to shrink if needed
   },
   hanziText: {
-    fontSize: 18, // Same size as pinyin
+    fontSize: 16, // Reduced from 18 to accommodate multi-character words
     fontWeight: '600',
     fontFamily: 'System',
     textAlign: 'center',
+    flexShrink: 1, // Allow text to shrink if needed
   },
 });
 

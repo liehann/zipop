@@ -77,7 +77,8 @@ export function getFeaturedLessons(): LessonData[] {
  */
 export function lessonToWordListData(lesson: LessonData): WordListData {
   // Use the text processing system to convert the Chinese content to structured data
-  const wordListData = processChineseText(lesson.content.chinese, lesson.title);
+  // Pass the lesson vocabulary for better word segmentation
+  const wordListData = processChineseText(lesson.content.chinese, lesson.title, lesson.vocabulary);
   
   // Override sentence translations with the provided English translations
   if (lesson.content.sentences && lesson.content.sentences.length > 0) {
