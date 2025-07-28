@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-07-28T02:31:16.541Z",
+  "request": {
+    "url": "https://api.elevenlabs.io/v1/audio-to-text/alignment",
+    "method": "POST",
+    "headers": {
+      "xi-api-key": "[REDACTED]",
+      "content-type": "multipart/form-data; boundary=--------------------------4ae233a8ae1d3c718d9faac7"
+    },
+    "body": {
+      "text": "你好！你好吗？我很好，谢谢你。不客气。你叫什么名字？我叫李明。很高兴认识你。再见！",
+      "model": "eleven_multilingual_v2",
+      "audioFile": {
+        "path": "/Users/liehann/Projects/zipop/audio/beginner-greetings.mp3",
+        "size": 265449,
+        "sizeMB": "0.25"
+      }
+    }
+  },
+  "response": null,
+  "error": {
+    "message": "request to https://api.elevenlabs.io/v1/audio-to-text/alignment failed, reason: read ECONNRESET",
+    "stack": "FetchError: request to https://api.elevenlabs.io/v1/audio-to-text/alignment failed, reason: read ECONNRESET\n    at ClientRequest.<anonymous> (/Users/liehann/Projects/zipop/timings/node_modules/node-fetch/lib/index.js:1501:11)\n    at ClientRequest.emit (node:events:518:28)\n    at emitErrorEvent (node:_http_client:104:11)\n    at TLSSocket.socketErrorListener (node:_http_client:518:5)\n    at TLSSocket.emit (node:events:518:28)\n    at emitErrorNT (node:internal/streams/destroy:170:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:129:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"
+  }
+}

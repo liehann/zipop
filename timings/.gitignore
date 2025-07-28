@@ -1,0 +1,13 @@
+# Environment variables (contains API keys)
+.env
+
+# Debug output files
+*-debug.json
+
+# NPM
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Output files (optional - you may want to commit these)
+*-alignment.json 

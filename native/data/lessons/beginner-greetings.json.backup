@@ -19,8 +19,8 @@
         "english": "Hello!",
         "timing": {
           "start": 0.219,
-          "end": 1.599,
-          "duration": 1.38
+          "end": 0.68,
+          "duration": 0.4610000000000001
         },
         "words": [
           {
@@ -34,12 +34,6 @@
             "start": 0.439,
             "end": 0.68,
             "duration": 0.24100000000000005
-          },
-          {
-            "word": "！",
-            "start": 0.68,
-            "end": 1.599,
-            "duration": 0.9189999999999999
           }
         ]
       },
@@ -47,95 +41,21 @@
         "chinese": "你好吗？",
         "english": "How are you?",
         "timing": {
-          "start": 1.599,
-          "end": 3.059,
-          "duration": 1.4600000000000002
+          "start": 1,
+          "end": 2,
+          "duration": 0
         },
-        "words": [
-          {
-            "word": "你",
-            "start": 1.599,
-            "end": 1.959,
-            "duration": 0.3600000000000001
-          },
-          {
-            "word": "好",
-            "start": 1.959,
-            "end": 2.119,
-            "duration": 0.16000000000000014
-          },
-          {
-            "word": "吗",
-            "start": 2.119,
-            "end": 2.279,
-            "duration": 0.1599999999999997
-          },
-          {
-            "word": "？",
-            "start": 2.279,
-            "end": 3.059,
-            "duration": 0.7800000000000002
-          }
-        ]
+        "words": []
       },
       {
         "chinese": "我很好，谢谢你。",
         "english": "I'm very well, thank you.",
         "timing": {
-          "start": 3.059,
-          "end": 5.019,
-          "duration": 1.96
+          "start": 2,
+          "end": 3.778,
+          "duration": 0
         },
-        "words": [
-          {
-            "word": "我",
-            "start": 3.059,
-            "end": 3.339,
-            "duration": 0.2799999999999998
-          },
-          {
-            "word": "很",
-            "start": 3.339,
-            "end": 3.659,
-            "duration": 0.31999999999999984
-          },
-          {
-            "word": "好",
-            "start": 3.659,
-            "end": 3.819,
-            "duration": 0.16000000000000014
-          },
-          {
-            "word": "，",
-            "start": 3.819,
-            "end": 4.42,
-            "duration": 0.601
-          },
-          {
-            "word": "谢",
-            "start": 4.42,
-            "end": 4.739,
-            "duration": 0.31899999999999995
-          },
-          {
-            "word": "谢",
-            "start": 4.739,
-            "end": 4.94,
-            "duration": 0.2010000000000005
-          },
-          {
-            "word": "你",
-            "start": 4.94,
-            "end": 5.019,
-            "duration": 0.07899999999999974
-          },
-          {
-            "word": "。",
-            "start": 5.019,
-            "end": 5.019,
-            "duration": 0
-          }
-        ]
+        "words": []
       },
       {
         "chinese": "不客气。",
@@ -183,9 +103,16 @@
         "timing": {
           "start": 0.68,
           "end": 1.599,
-          "duration": 0
+          "duration": 0.9189999999999999
         },
-        "words": []
+        "words": [
+          {
+            "word": "！",
+            "start": 0.68,
+            "end": 1.599,
+            "duration": 0.9189999999999999
+          }
+        ]
       }
     ]
   },
@@ -249,7 +176,7 @@
   ],
   "metadata": {
     "dateCreated": "2024-01-15T10:00:00Z",
-    "dateModified": "2025-07-28T02:55:25.413Z",
+    "dateModified": "2025-07-28T02:48:32.316Z",
     "author": "ZiPop Team",
     "version": "1.0",
     "audioProcessed": true,

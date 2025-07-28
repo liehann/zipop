@@ -1,0 +1,29 @@
+{
+  "name": "zipop-forced-alignment",
+  "version": "1.0.0",
+  "description": "ElevenLabs Forced Alignment scripts for ZiPop audio processing",
+  "main": "forcedAlignment.js",
+  "bin": {
+    "11labs_force_alignment": "./forcedAlignment.js"
+  },
+  "scripts": {
+    "align:beginner-greetings": "node forcedAlignment.js --audio=../audio/beginner-greetings.mp3 --lesson=../native/data/lessons/beginner-greetings.json",
+    "install-deps": "npm install",
+    "link": "npm link"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "elevenlabs",
+    "forced-alignment",
+    "chinese",
+    "audio",
+    "timing"
+  ],
+  "author": "ZiPop Team",
+  "license": "MIT"
+} 
