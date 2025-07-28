@@ -39,13 +39,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 300,
+          duration: 50,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
           toValue: 1,
-          duration: 300,
+          duration: 50,
           easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
