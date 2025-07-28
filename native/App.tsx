@@ -3,7 +3,7 @@
  * Multilingual reading app with text management
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 // Import hooks and components
 import { useAppState } from './hooks/useAppState';
@@ -22,11 +23,13 @@ import WordGrid from './components/WordGrid';
 import TranslationView from './components/TranslationView';
 import AddTextView from './components/AddTextView';
 import ChooseTextView from './components/ChooseTextView';
+import Sidebar from './components/Sidebar';
 import { SavedDocument } from './types';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const scrollViewRef = useRef<ScrollView>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   
   // Use the domain layer through the custom hook
   const {
@@ -56,6 +59,22 @@ function App(): React.JSX.Element {
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+  };
+
+  // Copy all Chinese text to clipboard
+  const handleCopyChinese = async () => {
+    try {
+      const chineseText = wordList.sentences
+        .map(sentence => 
+          sentence.words.map(word => word.hanzi).join('')
+        )
+        .join('');
+      
+      await Clipboard.setString(chineseText);
+      Alert.alert('Success', 'Chinese text copied to clipboard!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to copy text. Please try again.');
+    }
   };
 
   // Handle document save from AddTextView
@@ -106,14 +125,14 @@ function App(): React.JSX.Element {
               { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
             ]}>
               <TouchableOpacity
-                style={styles.menuButton}
-                onPress={goToChooseText}
+                style={styles.hamburgerButton}
+                onPress={() => setSidebarVisible(true)}
               >
                 <Text style={[
-                  styles.menuButtonText,
-                  { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+                  styles.hamburgerIcon,
+                  { color: isDarkMode ? '#ffffff' : '#000000' }
                 ]}>
-                  Choose Text
+                  ☰
                 </Text>
               </TouchableOpacity>
               
@@ -132,17 +151,7 @@ function App(): React.JSX.Element {
                 </Text>
               </View>
               
-              <TouchableOpacity
-                style={styles.menuButton}
-                onPress={goToAddText}
-              >
-                <Text style={[
-                  styles.menuButtonText,
-                  { color: isDarkMode ? '#81b0ff' : '#007AFF' }
-                ]}>
-                  Add Text
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.headerSpacer} />
             </View>
 
             {/* SCROLLABLE CONTENT */}
@@ -185,6 +194,14 @@ function App(): React.JSX.Element {
       />
       
       {renderCurrentView()}
+      
+      <Sidebar
+        visible={sidebarVisible}
+        onClose={() => setSidebarVisible(false)}
+        onChooseText={goToChooseText}
+        onAddText={goToAddText}
+        onCopyChinese={handleCopyChinese}
+      />
     </SafeAreaView>
   );
 }
@@ -214,6 +231,18 @@ const styles = StyleSheet.create({
   audioStatus: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  hamburgerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  hamburgerIcon: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  headerSpacer: {
+    width: 44, // Same width as hamburger button to keep title centered
   },
   menuButton: {
     paddingVertical: 8,
