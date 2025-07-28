@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { SavedDocument } from '../types';
 import { getSavedDocuments, deleteDocument } from '../utils/storage';
+import { getBuiltInLessons, lessonToWordListData } from '../data/dataLoader';
+import { BuiltInLesson } from '../data/types';
 
 interface ChooseTextViewProps {
   onSelectDocument: (document: SavedDocument) => void;
@@ -26,6 +28,7 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
   const [documents, setDocuments] = useState<SavedDocument[]>([]);
+  const [builtInLessons, setBuiltInLessons] = useState<BuiltInLesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -33,8 +36,12 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
     try {
       const savedDocs = await getSavedDocuments();
       setDocuments(savedDocs);
+      
+      // Load built-in lessons
+      const lessons = getBuiltInLessons();
+      setBuiltInLessons(lessons);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load saved documents.');
+      Alert.alert('Error', 'Failed to load documents.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -72,6 +79,21 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
     );
   };
 
+  const handleSelectBuiltInLesson = (lesson: BuiltInLesson) => {
+    // Convert the lesson to a SavedDocument format for the app
+    const wordListData = lessonToWordListData(lesson.lessonData);
+    const document: SavedDocument = {
+      id: lesson.id,
+      title: lesson.title,
+      originalText: lesson.lessonData.content.chinese,
+      wordListData,
+      dateCreated: lesson.lessonData.metadata.dateCreated,
+      dateModified: lesson.lessonData.metadata.dateModified,
+    };
+    
+    onSelectDocument(document);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { 
@@ -92,6 +114,30 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
     }
     
     return hanziText.substring(0, previewLength) + '...';
+  };
+
+  const getLessonPreviewText = (lesson: BuiltInLesson) => {
+    const previewLength = 25;
+    const chineseText = lesson.lessonData.content.chinese;
+    
+    if (chineseText.length <= previewLength) {
+      return chineseText;
+    }
+    
+    return chineseText.substring(0, previewLength) + '...';
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'beginner':
+        return isDarkMode ? '#4CAF50' : '#2E7D32';
+      case 'intermediate':
+        return isDarkMode ? '#FF9800' : '#F57C00';
+      case 'advanced':
+        return isDarkMode ? '#F44336' : '#C62828';
+      default:
+        return isDarkMode ? '#9E9E9E' : '#616161';
+    }
   };
 
   if (isLoading) {
@@ -154,7 +200,7 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Document List */}
+      {/* Content */}
       <ScrollView
         style={styles.content}
         refreshControl={
@@ -165,13 +211,177 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
           />
         }
       >
-        {documents.length === 0 ? (
+        {/* Built-in Lessons Section */}
+        {builtInLessons.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={[
+                styles.sectionTitle,
+                { color: isDarkMode ? '#ffffff' : '#000000' }
+              ]}>
+                📚 Featured Lessons
+              </Text>
+              <Text style={[
+                styles.sectionSubtitle,
+                { color: isDarkMode ? '#cccccc' : '#666666' }
+              ]}>
+                Curated content for learning Chinese
+              </Text>
+            </View>
+
+            {builtInLessons.map((lesson) => (
+              <View key={lesson.id} style={[
+                styles.lessonCard,
+                { 
+                  backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                  borderColor: isDarkMode ? '#404040' : '#e0e0e0',
+                  borderLeftColor: getLevelColor(lesson.level),
+                }
+              ]}>
+                <TouchableOpacity
+                  style={styles.documentContent}
+                  onPress={() => handleSelectBuiltInLesson(lesson)}
+                >
+                  <View style={styles.lessonHeader}>
+                    <Text style={[
+                      styles.documentTitle,
+                      { color: isDarkMode ? '#ffffff' : '#000000' }
+                    ]}>
+                      {lesson.title}
+                    </Text>
+                    <View style={[
+                      styles.levelBadge,
+                      { backgroundColor: getLevelColor(lesson.level) }
+                    ]}>
+                      <Text style={styles.levelBadgeText}>
+                        {lesson.level.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <Text style={[
+                    styles.lessonDescription,
+                    { color: isDarkMode ? '#cccccc' : '#666666' }
+                  ]}>
+                    {lesson.description}
+                  </Text>
+                  
+                  <Text style={[
+                    styles.documentPreview,
+                    { color: isDarkMode ? '#cccccc' : '#555555' }
+                  ]}>
+                    {getLessonPreviewText(lesson)}
+                  </Text>
+                  
+                  <View style={styles.documentMeta}>
+                    <Text style={[
+                      styles.documentMetaText,
+                      { color: isDarkMode ? '#999999' : '#999999' }
+                    ]}>
+                      📖 {lesson.lessonData.content.sentences.length} sentences
+                    </Text>
+                    <Text style={[
+                      styles.documentMetaText,
+                      { color: isDarkMode ? '#999999' : '#999999' }
+                    ]}>
+                      ⏱️ ~{lesson.estimatedTime} min
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </>
+        )}
+
+        {/* Divider between sections */}
+        {builtInLessons.length > 0 && documents.length > 0 && (
+          <View style={styles.divider} />
+        )}
+
+        {/* Saved Documents Section */}
+        {documents.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={[
+                styles.sectionTitle,
+                { color: isDarkMode ? '#ffffff' : '#000000' }
+              ]}>
+                📄 My Documents
+              </Text>
+              <Text style={[
+                styles.sectionSubtitle,
+                { color: isDarkMode ? '#cccccc' : '#666666' }
+              ]}>
+                Your saved Chinese texts
+              </Text>
+            </View>
+
+            {documents.map((doc) => (
+              <View key={doc.id} style={[
+                styles.documentCard,
+                { 
+                  backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
+                  borderColor: isDarkMode ? '#404040' : '#e0e0e0'
+                }
+              ]}>
+                <TouchableOpacity
+                  style={styles.documentContent}
+                  onPress={() => onSelectDocument(doc)}
+                >
+                  <Text style={[
+                    styles.documentTitle,
+                    { color: isDarkMode ? '#ffffff' : '#000000' }
+                  ]}>
+                    {doc.title}
+                  </Text>
+                  
+                  <Text style={[
+                    styles.documentPreview,
+                    { color: isDarkMode ? '#cccccc' : '#555555' }
+                  ]}>
+                    {getPreviewText(doc)}
+                  </Text>
+                  
+                  <View style={styles.documentMeta}>
+                    <Text style={[
+                      styles.documentMetaText,
+                      { color: isDarkMode ? '#999999' : '#999999' }
+                    ]}>
+                      {doc.wordListData.sentences.length} sentences
+                    </Text>
+                    <Text style={[
+                      styles.documentMetaText,
+                      { color: isDarkMode ? '#999999' : '#999999' }
+                    ]}>
+                      Modified: {formatDate(doc.dateModified)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteDocument(doc)}
+                >
+                  <Text style={[
+                    styles.deleteButtonText,
+                    { color: isDarkMode ? '#ff6b6b' : '#dc3545' }
+                  ]}>
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </>
+        )}
+
+        {/* Empty state */}
+        {documents.length === 0 && builtInLessons.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={[
               styles.emptyStateTitle,
               { color: isDarkMode ? '#ffffff' : '#000000' }
             ]}>
-              No Saved Documents
+              No Content Available
             </Text>
             <Text style={[
               styles.emptyStateText,
@@ -180,62 +390,6 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
               Tap "Add New" to create your first Chinese text document.
             </Text>
           </View>
-        ) : (
-          documents.map((doc) => (
-            <View key={doc.id} style={[
-              styles.documentCard,
-              { 
-                backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff',
-                borderColor: isDarkMode ? '#404040' : '#e0e0e0'
-              }
-            ]}>
-              <TouchableOpacity
-                style={styles.documentContent}
-                onPress={() => onSelectDocument(doc)}
-              >
-                <Text style={[
-                  styles.documentTitle,
-                  { color: isDarkMode ? '#ffffff' : '#000000' }
-                ]}>
-                  {doc.title}
-                </Text>
-                
-                <Text style={[
-                  styles.documentPreview,
-                  { color: isDarkMode ? '#cccccc' : '#555555' }
-                ]}>
-                  {getPreviewText(doc)}
-                </Text>
-                
-                <View style={styles.documentMeta}>
-                  <Text style={[
-                    styles.documentMetaText,
-                    { color: isDarkMode ? '#999999' : '#999999' }
-                  ]}>
-                    {doc.wordListData.sentences.length} sentences
-                  </Text>
-                  <Text style={[
-                    styles.documentMetaText,
-                    { color: isDarkMode ? '#999999' : '#999999' }
-                  ]}>
-                    Modified: {formatDate(doc.dateModified)}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteDocument(doc)}
-              >
-                <Text style={[
-                  styles.deleteButtonText,
-                  { color: isDarkMode ? '#ff6b6b' : '#dc3545' }
-                ]}>
-                  Delete
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))
         )}
       </ScrollView>
     </View>
@@ -289,20 +443,28 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
+  sectionHeader: {
+    marginBottom: 16,
   },
-  emptyStateTitle: {
+  sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  emptyStateText: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 22,
+  sectionSubtitle: {
+    fontSize: 14,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginVertical: 24,
+  },
+  lessonCard: {
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
   documentCard: {
     borderWidth: 1,
@@ -313,10 +475,32 @@ const styles = StyleSheet.create({
   documentContent: {
     padding: 16,
   },
+  lessonHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
   documentTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    flex: 1,
+  },
+  levelBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 12,
+  },
+  levelBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  lessonDescription: {
+    fontSize: 14,
     marginBottom: 8,
+    lineHeight: 20,
   },
   documentPreview: {
     fontSize: 16,
@@ -340,6 +524,21 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
 

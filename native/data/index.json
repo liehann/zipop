@@ -1,0 +1,86 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2024-01-15T12:00:00Z",
+  "totalLessons": 4,
+  "categories": [
+    {
+      "id": "greetings",
+      "name": "Greetings & Politeness",
+      "description": "Basic greetings and polite expressions"
+    },
+    {
+      "id": "food",
+      "name": "Food & Dining",
+      "description": "Restaurant ordering and food-related vocabulary"
+    },
+    {
+      "id": "shopping",
+      "name": "Shopping & Commerce",
+      "description": "Shopping, bargaining, and commercial interactions"
+    },
+    {
+      "id": "time",
+      "name": "Time & Dates",
+      "description": "Time expressions, dates, and scheduling"
+    }
+  ],
+  "levels": [
+    {
+      "id": "beginner",
+      "name": "Beginner",
+      "description": "Basic vocabulary and simple sentence structures"
+    },
+    {
+      "id": "intermediate",
+      "name": "Intermediate",
+      "description": "More complex grammar and practical conversations"
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced",
+      "description": "Complex topics and sophisticated language use"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "beginner-greetings",
+      "file": "lessons/beginner-greetings.json",
+      "title": "Beginner Greetings",
+      "level": "beginner",
+      "category": "greetings",
+      "estimatedTime": 15,
+      "featured": true,
+      "order": 1
+    },
+    {
+      "id": "shopping-basics",
+      "file": "lessons/shopping-basics.json",
+      "title": "Shopping Basics",
+      "level": "beginner",
+      "category": "shopping",
+      "estimatedTime": 18,
+      "featured": true,
+      "order": 2
+    },
+    {
+      "id": "restaurant-ordering",
+      "file": "lessons/restaurant-ordering.json",
+      "title": "Restaurant Ordering",
+      "level": "intermediate",
+      "category": "food",
+      "estimatedTime": 20,
+      "featured": false,
+      "order": 3
+    },
+    {
+      "id": "time-and-dates",
+      "file": "lessons/time-and-dates.json",
+      "title": "Time and Dates",
+      "level": "intermediate",
+      "category": "time",
+      "estimatedTime": 25,
+      "featured": false,
+      "order": 4
+    }
+  ]
+} 

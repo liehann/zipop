@@ -1,0 +1,86 @@
+{
+  "id": "shopping-basics",
+  "title": "Shopping Basics",
+  "description": "Essential phrases for shopping in Chinese stores and markets",
+  "level": "beginner",
+  "category": "shopping",
+  "tags": ["shopping", "money", "bargaining", "market"],
+  "estimatedTime": 18,
+  "content": {
+    "chinese": "这个多少钱？太贵了，能便宜一点吗？我买两个。有什么颜色？我要红色的。哪里付钱？谢谢，再见！",
+    "sentences": [
+      {
+        "chinese": "这个多少钱？",
+        "english": "How much is this?"
+      },
+      {
+        "chinese": "太贵了，能便宜一点吗？",
+        "english": "It's too expensive, can you make it cheaper?"
+      },
+      {
+        "chinese": "我买两个。",
+        "english": "I'll buy two."
+      },
+      {
+        "chinese": "有什么颜色？",
+        "english": "What colors do you have?"
+      },
+      {
+        "chinese": "我要红色的。",
+        "english": "I want the red one."
+      },
+      {
+        "chinese": "哪里付钱？",
+        "english": "Where do I pay?"
+      },
+      {
+        "chinese": "谢谢，再见！",
+        "english": "Thank you, goodbye!"
+      }
+    ]
+  },
+  "vocabulary": [
+    {
+      "chinese": "多少钱",
+      "english": "how much money"
+    },
+    {
+      "chinese": "贵",
+      "english": "expensive"
+    },
+    {
+      "chinese": "便宜",
+      "english": "cheap"
+    },
+    {
+      "chinese": "买",
+      "english": "to buy"
+    },
+    {
+      "chinese": "两个",
+      "english": "two (of something)"
+    },
+    {
+      "chinese": "颜色",
+      "english": "color"
+    },
+    {
+      "chinese": "红色",
+      "english": "red color"
+    },
+    {
+      "chinese": "哪里",
+      "english": "where"
+    },
+    {
+      "chinese": "付钱",
+      "english": "to pay money"
+    }
+  ],
+  "metadata": {
+    "dateCreated": "2024-01-15T11:00:00Z",
+    "dateModified": "2024-01-15T11:00:00Z",
+    "author": "ZiPop Team",
+    "version": "1.0"
+  }
+} 

@@ -1,0 +1,102 @@
+{
+  "id": "time-and-dates",
+  "title": "Time and Dates",
+  "description": "Learn to express time, dates, and schedule-related phrases in Chinese",
+  "level": "intermediate",
+  "category": "time",
+  "tags": ["time", "dates", "numbers", "schedule", "clock"],
+  "estimatedTime": 25,
+  "content": {
+    "chinese": "现在几点？现在是下午三点半。今天是星期几？今天是星期一。明天我有空。你什么时候有时间？我们六点见面吧。",
+    "sentences": [
+      {
+        "chinese": "现在几点？",
+        "english": "What time is it now?"
+      },
+      {
+        "chinese": "现在是下午三点半。",
+        "english": "It's 3:30 PM now."
+      },
+      {
+        "chinese": "今天是星期几？",
+        "english": "What day of the week is today?"
+      },
+      {
+        "chinese": "今天是星期一。",
+        "english": "Today is Monday."
+      },
+      {
+        "chinese": "明天我有空。",
+        "english": "I'm free tomorrow."
+      },
+      {
+        "chinese": "你什么时候有时间？",
+        "english": "When do you have time?"
+      },
+      {
+        "chinese": "我们六点见面吧。",
+        "english": "Let's meet at six o'clock."
+      }
+    ]
+  },
+  "vocabulary": [
+    {
+      "chinese": "现在",
+      "english": "now"
+    },
+    {
+      "chinese": "几点",
+      "english": "what time"
+    },
+    {
+      "chinese": "下午",
+      "english": "afternoon"
+    },
+    {
+      "chinese": "三点半",
+      "english": "three thirty"
+    },
+    {
+      "chinese": "今天",
+      "english": "today"
+    },
+    {
+      "chinese": "星期",
+      "english": "week"
+    },
+    {
+      "chinese": "星期一",
+      "english": "Monday"
+    },
+    {
+      "chinese": "明天",
+      "english": "tomorrow"
+    },
+    {
+      "chinese": "有空",
+      "english": "to be free/available"
+    },
+    {
+      "chinese": "时候",
+      "english": "time/when"
+    },
+    {
+      "chinese": "时间",
+      "english": "time"
+    },
+    {
+      "chinese": "见面",
+      "english": "to meet"
+    },
+    {
+      "chinese": "六点",
+      "english": "six o'clock"
+    }
+  ],
+  "metadata": {
+    "dateCreated": "2024-01-15T11:30:00Z",
+    "dateModified": "2024-01-15T11:30:00Z",
+    "author": "ZiPop Team",
+    "version": "1.0"
+  }
+} 

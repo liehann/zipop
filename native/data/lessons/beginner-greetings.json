@@ -1,0 +1,110 @@
+{
+  "id": "beginner-greetings",
+  "title": "Beginner Greetings",
+  "description": "Essential Chinese greetings and polite expressions for beginners",
+  "level": "beginner",
+  "category": "greetings",
+  "tags": ["greetings", "polite", "basic", "conversation"],
+  "estimatedTime": 15,
+  "content": {
+    "chinese": "你好！你好吗？我很好，谢谢你。不客气。你叫什么名字？我叫李明。很高兴认识你。再见！",
+    "sentences": [
+      {
+        "chinese": "你好！",
+        "english": "Hello!"
+      },
+      {
+        "chinese": "你好吗？",
+        "english": "How are you?"
+      },
+      {
+        "chinese": "我很好，谢谢你。",
+        "english": "I'm very well, thank you."
+      },
+      {
+        "chinese": "不客气。",
+        "english": "You're welcome."
+      },
+      {
+        "chinese": "你叫什么名字？",
+        "english": "What's your name?"
+      },
+      {
+        "chinese": "我叫李明。",
+        "english": "My name is Li Ming."
+      },
+      {
+        "chinese": "很高兴认识你。",
+        "english": "Nice to meet you."
+      },
+      {
+        "chinese": "再见！",
+        "english": "Goodbye!"
+      }
+    ]
+  },
+  "vocabulary": [
+    {
+      "chinese": "你好",
+      "english": "hello"
+    },
+    {
+      "chinese": "你",
+      "english": "you"
+    },
+    {
+      "chinese": "好",
+      "english": "good/well"
+    },
+    {
+      "chinese": "吗",
+      "english": "question particle"
+    },
+    {
+      "chinese": "我",
+      "english": "I/me"
+    },
+    {
+      "chinese": "很",
+      "english": "very"
+    },
+    {
+      "chinese": "谢谢",
+      "english": "thank you"
+    },
+    {
+      "chinese": "不客气",
+      "english": "you're welcome"
+    },
+    {
+      "chinese": "叫",
+      "english": "to be called"
+    },
+    {
+      "chinese": "什么",
+      "english": "what"
+    },
+    {
+      "chinese": "名字",
+      "english": "name"
+    },
+    {
+      "chinese": "高兴",
+      "english": "happy/glad"
+    },
+    {
+      "chinese": "认识",
+      "english": "to know/meet"
+    },
+    {
+      "chinese": "再见",
+      "english": "goodbye"
+    }
+  ],
+  "metadata": {
+    "dateCreated": "2024-01-15T10:00:00Z",
+    "dateModified": "2024-01-15T10:00:00Z",
+    "author": "ZiPop Team",
+    "version": "1.0"
+  }
+} 

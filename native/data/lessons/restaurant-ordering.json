@@ -1,0 +1,102 @@
+{
+  "id": "restaurant-ordering",
+  "title": "Restaurant Ordering",
+  "description": "Learn how to order food and drinks in Chinese restaurants",
+  "level": "intermediate",
+  "category": "food",
+  "tags": ["restaurant", "food", "ordering", "practical"],
+  "estimatedTime": 20,
+  "content": {
+    "chinese": "请问，有菜单吗？我想要一杯茶。你们有什么特色菜？我要一碗米饭，一盘青菜。这个菜辣吗？请不要放辣椒。买单，谢谢！",
+    "sentences": [
+      {
+        "chinese": "请问，有菜单吗？",
+        "english": "Excuse me, do you have a menu?"
+      },
+      {
+        "chinese": "我想要一杯茶。",
+        "english": "I would like a cup of tea."
+      },
+      {
+        "chinese": "你们有什么特色菜？",
+        "english": "What are your specialty dishes?"
+      },
+      {
+        "chinese": "我要一碗米饭，一盘青菜。",
+        "english": "I want a bowl of rice and a plate of vegetables."
+      },
+      {
+        "chinese": "这个菜辣吗？",
+        "english": "Is this dish spicy?"
+      },
+      {
+        "chinese": "请不要放辣椒。",
+        "english": "Please don't add chili peppers."
+      },
+      {
+        "chinese": "买单，谢谢！",
+        "english": "The bill, please!"
+      }
+    ]
+  },
+  "vocabulary": [
+    {
+      "chinese": "请问",
+      "english": "excuse me/may I ask"
+    },
+    {
+      "chinese": "菜单",
+      "english": "menu"
+    },
+    {
+      "chinese": "想要",
+      "english": "to want"
+    },
+    {
+      "chinese": "杯",
+      "english": "cup/glass (measure word)"
+    },
+    {
+      "chinese": "茶",
+      "english": "tea"
+    },
+    {
+      "chinese": "特色菜",
+      "english": "specialty dish"
+    },
+    {
+      "chinese": "碗",
+      "english": "bowl (measure word)"
+    },
+    {
+      "chinese": "米饭",
+      "english": "rice"
+    },
+    {
+      "chinese": "盘",
+      "english": "plate (measure word)"
+    },
+    {
+      "chinese": "青菜",
+      "english": "green vegetables"
+    },
+    {
+      "chinese": "辣",
+      "english": "spicy"
+    },
+    {
+      "chinese": "辣椒",
+      "english": "chili pepper"
+    },
+    {
+      "chinese": "买单",
+      "english": "to pay the bill"
+    }
+  ],
+  "metadata": {
+    "dateCreated": "2024-01-15T10:30:00Z",
+    "dateModified": "2024-01-15T10:30:00Z",
+    "author": "ZiPop Team",
+    "version": "1.0"
+  }
+} 
