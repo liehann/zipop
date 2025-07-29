@@ -48,6 +48,7 @@ function App(): React.JSX.Element {
     loadDocument,
     saveCurrentDocument,
     formatTime,
+    toggleAudioPlayback,
   } = useAppState();
 
   // Set initial current sentence for demonstration
@@ -147,11 +148,23 @@ function App(): React.JSX.Element {
                   styles.audioStatus,
                   { color: isDarkMode ? '#999999' : '#666666' }
                 ]}>
-                  {audioState.isPlaying ? '▶︎' : '⏸'} {formatTime(audioState.currentTime)} / {formatTime(audioState.duration)}
+                  {formatTime(audioState.currentTime)} / {formatTime(audioState.duration)}
                 </Text>
               </View>
               
-              <View style={styles.headerSpacer} />
+              {/* Play/Pause Button */}
+              <TouchableOpacity
+                style={[
+                  styles.headerPlayButton,
+                  { backgroundColor: isDarkMode ? '#007AFF' : '#007AFF' }
+                ]}
+                onPress={toggleAudioPlayback}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.headerPlayButtonText}>
+                  {audioState.isPlaying ? '⏸' : '▶️'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* SCROLLABLE CONTENT */}
@@ -241,8 +254,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  headerSpacer: {
-    width: 44, // Same width as hamburger button to keep title centered
+  headerPlayButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  headerPlayButtonText: {
+    fontSize: 16,
+    color: '#ffffff',
   },
   menuButton: {
     paddingVertical: 8,

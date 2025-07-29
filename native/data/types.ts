@@ -12,9 +12,34 @@ export interface SentencePair {
   english: string;
 }
 
+export interface WordTiming {
+  word: string;
+  start: number;
+  end: number;
+  duration: number;
+}
+
+export interface SentenceTiming {
+  start: number;
+  end: number;
+  duration: number;
+}
+
+export interface TimedSentence extends SentencePair {
+  timing?: SentenceTiming;
+  words?: WordTiming[];
+}
+
 export interface LessonContent {
   chinese: string; // Full Chinese text for processing
-  sentences: SentencePair[];
+  sentences: TimedSentence[];
+}
+
+export interface AudioConfig {
+  enabled: boolean;
+  file: string;
+  hasTimings: boolean;
+  totalDuration: number;
 }
 
 export interface LessonMetadata {
@@ -22,6 +47,9 @@ export interface LessonMetadata {
   dateModified: string;
   author: string;
   version: string;
+  audioProcessed?: boolean;
+  timingsUpdated?: boolean;
+  timingsSource?: string;
 }
 
 export interface LessonData {
@@ -35,6 +63,7 @@ export interface LessonData {
   content: LessonContent;
   vocabulary: VocabularyItem[];
   metadata: LessonMetadata;
+  audio?: AudioConfig;
 }
 
 export interface Category {

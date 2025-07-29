@@ -3,96 +3,75 @@ import {
   View,
   Text,
   StyleSheet,
-  useColorScheme,
   TouchableOpacity,
+  useColorScheme,
 } from 'react-native';
 import { Word, Sentence } from '../types';
+import { useAppState } from '../hooks/useAppState';
 
 interface TranslationViewProps {
   selectedWord: Word | null;
   selectedSentence: Sentence | null;
-  onClose?: () => void;
-  onSentenceSelect?: (sentence: Sentence) => void;
+  onSentenceSelect: (sentence: Sentence) => void;
 }
 
-const TranslationView: React.FC<TranslationViewProps> = ({
-  selectedWord,
-  selectedSentence,
-  onClose,
-  onSentenceSelect,
+const TranslationView: React.FC<TranslationViewProps> = ({ 
+  selectedWord, 
+  selectedSentence, 
+  onSentenceSelect 
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
+  const { playSentenceAudio, audioState } = useAppState();
 
-  // Helper function to combine sentence words into full translations
+  // Helper function to get sentence translation from individual words
   const getSentenceTranslation = (sentence: Sentence) => {
-    const pinyinText = sentence.sentencePinyin || sentence.words.map(word => word.pinyin).join(' ');
-    const hanziText = sentence.words.map(word => word.hanzi).join('');
-    const englishText = sentence.sentenceEnglish || sentence.words.map(word => word.english).join(' ');
+    const hanzi = sentence.words.map(word => word.hanzi).join('');
+    const pinyin = sentence.sentencePinyin || sentence.words.map(word => word.pinyin).join(' ');
+    const english = sentence.sentenceEnglish || sentence.words.map(word => word.english).join(' ');
     
-    return {
-      pinyin: pinyinText,
-      hanzi: hanziText,
-      english: englishText,
-    };
+    return { hanzi, pinyin, english };
   };
 
-  // Helper function to break down a word into individual characters
+  // Helper function to get character breakdown for any word
   const getCharacterBreakdown = (word: Word) => {
-    const characters = word.hanzi.split('');
+    const chars = Array.from(word.hanzi);
     const pinyinParts = word.pinyin.split(' ');
+    const englishParts = word.english.split('/');
     
-    return characters.map((char, index) => ({
+    return chars.map((char, index) => ({
       chinese: char,
-      pinyin: pinyinParts[index] || '',
-      english: getCharacterTranslation(char)
+      pinyin: pinyinParts[index] || word.pinyin,
+      english: englishParts[index] || word.english,
     }));
   };
 
-  // Simple character translation lookup
-  const getCharacterTranslation = (char: string): string => {
-    const charDict: Record<string, string> = {
-      '你': 'you',
-      '好': 'good/well',
-      '吗': '(question particle)',
-      '我': 'I/me',
-      '很': 'very',
-      '谢': 'thank',
-      '对': 'correct',
-      '不': 'not',
-      '起': 'rise/up',
-      '再': 'again',
-      '见': 'see/meet',
-      '他': 'he/him',
-      '她': 'she/her',
-      '是': 'is/to be',
-      '老': 'old',
-      '师': 'teacher',
-      '学': 'study',
-      '生': 'student',
-      '中': 'middle/China',
-      '国': 'country',
-      '人': 'person',
-      '什': 'what',
-      '么': '(particle)',
-      '名': 'name',
-      '字': 'character/word',
-      '叫': 'call',
-      '客': 'guest',
-      '气': 'manner/air',
-      '高': 'high',
-      '兴': 'interest',
-      '认': 'recognize',
-      '识': 'know',
-      '明': 'bright'
-    };
-    return charDict[char] || char;
-  };
-
   const handleSentencePress = () => {
-    if (selectedSentence && onSentenceSelect) {
+    if (selectedSentence) {
       onSentenceSelect(selectedSentence);
     }
   };
+
+  const handlePlayAudio = () => {
+    if (selectedSentence) {
+      playSentenceAudio(selectedSentence);
+    }
+  };
+
+  if (!selectedWord && !selectedSentence) {
+    return (
+      <View style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
+      ]}>
+        <Text style={[
+          styles.placeholderText,
+          { color: isDarkMode ? '#666666' : '#999999' }
+        ]}>
+          Tap a word or sentence to see its translation
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[
@@ -100,33 +79,51 @@ const TranslationView: React.FC<TranslationViewProps> = ({
       { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
     ]}>
       {selectedSentence ? (
-        // Show sentence translation
-        <TouchableOpacity onPress={handleSentencePress} activeOpacity={0.7}>
-          <View style={styles.translationContent}>
-            {/* English first and largest */}
-            <Text style={[
-              styles.englishTextLarge,
-              { color: isDarkMode ? '#ffffff' : '#000000' }
-            ]}>
-              {getSentenceTranslation(selectedSentence).english}
-            </Text>
+        // Show sentence translation with play button
+        <View style={styles.translationContent}>
+          <View style={styles.sentenceHeader}>
+            <TouchableOpacity onPress={handleSentencePress} activeOpacity={0.7} style={styles.sentenceTextContainer}>
+              <View>
+                {/* English first and largest */}
+                <Text style={[
+                  styles.englishTextLarge,
+                  { color: isDarkMode ? '#ffffff' : '#000000' }
+                ]}>
+                  {getSentenceTranslation(selectedSentence).english}
+                </Text>
+                
+                <View style={styles.translationDetails}>
+                  <Text style={[
+                    styles.hanziText,
+                    { color: isDarkMode ? '#ffffff' : '#000000' }
+                  ]}>
+                    {getSentenceTranslation(selectedSentence).hanzi}
+                  </Text>
+                  <Text style={[
+                    styles.pinyinText,
+                    { color: isDarkMode ? '#81b0ff' : '#007AFF' }
+                  ]}>
+                    {getSentenceTranslation(selectedSentence).pinyin}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
             
-            <View style={styles.translationDetails}>
-              <Text style={[
-                styles.hanziText,
-                { color: isDarkMode ? '#ffffff' : '#000000' }
-              ]}>
-                {getSentenceTranslation(selectedSentence).hanzi}
+            {/* Play button */}
+            <TouchableOpacity 
+              onPress={handlePlayAudio}
+              style={[
+                styles.playButton,
+                { backgroundColor: isDarkMode ? '#007AFF' : '#007AFF' }
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.playButtonText}>
+                {audioState.isPlaying ? '⏸' : '▶️'}
               </Text>
-              <Text style={[
-                styles.pinyinText,
-                { color: isDarkMode ? '#81b0ff' : '#007AFF' }
-              ]}>
-                {getSentenceTranslation(selectedSentence).pinyin}
-              </Text>
-            </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
       ) : selectedWord ? (
         // Show word translation with character breakdown
         <View style={styles.translationContent}>
@@ -166,83 +163,90 @@ const TranslationView: React.FC<TranslationViewProps> = ({
             ))}
           </View>
         </View>
-      ) : (
-        <Text style={[
-          styles.placeholderText,
-          { color: isDarkMode ? '#666666' : '#999999' }
-        ]}>
-          Tap a word or sentence to see its translation
-        </Text>
-      )}
+      ) : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    minHeight: 120,
+    maxHeight: 200,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    justifyContent: 'center',
   },
   translationContent: {
-    // Content container
+    flex: 1,
+    justifyContent: 'center',
+  },
+  sentenceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sentenceTextContainer: {
+    flex: 1,
+    marginRight: 15,
+  },
+  playButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  playButtonText: {
+    fontSize: 18,
+    color: '#ffffff',
   },
   englishTextLarge: {
-    fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 36,
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+    lineHeight: 28,
   },
   translationDetails: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 8,
-    gap: 12,
+    gap: 4,
   },
   hanziText: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'System',
+    fontWeight: '500',
+    lineHeight: 32,
   },
   pinyinText: {
     fontSize: 16,
-    fontWeight: '500',
     fontStyle: 'italic',
+    lineHeight: 22,
   },
   characterBreakdown: {
     marginTop: 12,
-  },
-  breakdownLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  breakdownText: {
-    fontSize: 14,
-    fontWeight: '400',
-    lineHeight: 20,
-    marginBottom: 4,
-  },
-  placeholderText: {
-    fontSize: 16,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 20,
+    gap: 6,
   },
   breakdownLine: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 4,
+    alignItems: 'center',
+    flexWrap: 'wrap',
   },
   breakdownSeparator: {
+    color: '#666666',
     fontSize: 14,
-    fontWeight: '400',
-    marginHorizontal: 4,
   },
   breakdownEnglish: {
     fontSize: 14,
-    fontWeight: '400',
+    fontStyle: 'italic',
+  },
+  placeholderText: {
+    fontSize: 16,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
 

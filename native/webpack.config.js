@@ -20,7 +20,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!react-native-sound)/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -35,6 +35,13 @@ module.exports = {
       {
         test: /\.(png|jpe?g|gif|svg)$/,
         type: 'asset/resource',
+      },
+      {
+        test: /\.(mp3|wav|aac|m4a)$/,
+        type: 'asset/resource',
+        generator: {
+          filename: 'audio/[name][ext]',
+        },
       },
     ],
   },

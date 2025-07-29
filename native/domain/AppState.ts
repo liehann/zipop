@@ -1,6 +1,8 @@
 import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence, AppViewState, SavedDocument } from '../types';
 import { getLessonById, lessonToWordListData } from '../data/dataLoader';
 import { saveDocument, setCurrentDocument } from '../utils/storage';
+import { audioManager, AudioManagerConfig } from '../utils/audioManager';
+import { loadAudioFromConfig } from '../utils/audioUtils';
 
 export class AppState {
   private wordList: WordListData;
@@ -9,12 +11,17 @@ export class AppState {
   private sentenceState: SentenceState;
   private appViewState: AppViewState;
   private listeners: Set<() => void> = new Set();
+  private currentLessonAudio: any = null; // Store current lesson's audio config
+  private currentLessonData: any = null; // Store current lesson data for timing lookups
 
   constructor() {
     // Load beginner-greetings lesson as default
     const beginnerGreetingsLesson = getLessonById('beginner-greetings');
     if (beginnerGreetingsLesson) {
       this.wordList = lessonToWordListData(beginnerGreetingsLesson);
+      this.currentLessonAudio = beginnerGreetingsLesson.audio;
+      this.currentLessonData = beginnerGreetingsLesson; // Store the full lesson data
+      this.initializeAudio();
     } else {
       // Fallback to empty data if lesson not found
       this.wordList = {
@@ -28,8 +35,8 @@ export class AppState {
     
     this.audioState = {
       isPlaying: false,
-      currentTime: 5, // 00:05
-      duration: 116, // 01:56
+      currentTime: 0,
+      duration: 0,
     };
     this.translationState = {
       selectedWord: null,
@@ -41,6 +48,132 @@ export class AppState {
     this.appViewState = {
       currentView: 'reader',
     };
+
+    // Configure audio manager callbacks
+    this.setupAudioManager();
+  }
+
+  private setupAudioManager(): void {
+    const config: AudioManagerConfig = {
+      onTimeUpdate: (currentTime: number) => {
+        this.updateAudioTime(currentTime);
+        this.updateCurrentSentenceFromTime(currentTime);
+      },
+      onPlaybackEnd: () => {
+        this.audioState = {
+          ...this.audioState,
+          isPlaying: false,
+        };
+        this.notifyListeners();
+      },
+      onError: (error: string) => {
+        console.error('Audio Manager Error:', error);
+        this.audioState = {
+          ...this.audioState,
+          isPlaying: false,
+        };
+        this.notifyListeners();
+      },
+    };
+
+    // Apply configuration to existing audio manager
+    (audioManager as any).config = config;
+  }
+
+  /**
+   * Update the current sentence based on audio playback time
+   */
+  private updateCurrentSentenceFromTime(currentTime: number): void {
+    if (!this.currentLessonData?.content?.sentences) {
+      console.log('No lesson data available for sentence tracking');
+      return;
+    }
+
+    // Find the sentence that should be playing at the current time
+    // Add a small buffer (0.1 seconds) to prevent rapid switching
+    const playingSentence = this.currentLessonData.content.sentences.find((sentence: any) => {
+      if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
+        const isInRange = currentTime >= (sentence.timing.start - 0.1) && currentTime <= (sentence.timing.end + 0.1);
+        if (isInRange) {
+          console.log(`Found playing sentence at time ${currentTime}:`, sentence.chinese);
+        }
+        return isInRange;
+      }
+      return false;
+    });
+
+    if (playingSentence) {
+      // Find the corresponding sentence in our wordList
+      const sentenceChinese = playingSentence.chinese;
+      console.log(`Looking for sentence in wordList: "${sentenceChinese}"`);
+      
+      // Remove punctuation from both sides for comparison
+      const normalizedSentenceChinese = sentenceChinese.replace(/[。！？；，]/g, '');
+      
+      const matchingSentence = this.wordList.sentences.find(sentence => {
+        const wordListSentence = sentence.words.map(word => word.hanzi).join('');
+        const normalizedWordListSentence = wordListSentence.replace(/[。！？；，]/g, '');
+        return normalizedWordListSentence === normalizedSentenceChinese;
+      });
+
+      if (matchingSentence) {
+        console.log(`Found matching sentence with ID: ${matchingSentence.id}, current ID: ${this.sentenceState.currentSentenceId}`);
+        
+        if (this.sentenceState.currentSentenceId !== matchingSentence.id) {
+          console.log(`Updating current sentence ID to: ${matchingSentence.id}`);
+          
+          // Update current sentence
+          this.sentenceState = {
+            ...this.sentenceState,
+            currentSentenceId: matchingSentence.id,
+          };
+          
+          // Also select this sentence for display in the translation view
+          this.translationState = {
+            ...this.translationState,
+            selectedSentence: matchingSentence,
+            selectedWord: null, // Clear word selection when sentence changes
+          };
+          
+          this.notifyListeners();
+        }
+      } else {
+        console.log(`No matching sentence found for: "${sentenceChinese}" (normalized: "${normalizedSentenceChinese}")`);
+        console.log('Available sentences (normalized):', this.wordList.sentences.map(s => {
+          const original = s.words.map(word => word.hanzi).join('');
+          const normalized = original.replace(/[。！？；，]/g, '');
+          return `"${original}" → "${normalized}"`;
+        }));
+      }
+    } else {
+      // If no sentence is playing, keep the current selection but update current sentence to null
+      // This prevents losing the translation display when audio is between sentences
+      if (this.sentenceState.currentSentenceId !== null) {
+        this.sentenceState = {
+          ...this.sentenceState,
+          currentSentenceId: null,
+        };
+        this.notifyListeners();
+      }
+    }
+  }
+
+  private async initializeAudio(): Promise<void> {
+    if (this.currentLessonAudio?.enabled && this.currentLessonAudio?.file) {
+      try {
+        const audioLoaded = await audioManager.loadAudio(this.currentLessonAudio.file);
+        if (audioLoaded) {
+          const audioState = audioManager.getState();
+          this.audioState = {
+            ...this.audioState,
+            duration: audioState.duration,
+          };
+          this.notifyListeners();
+        }
+      } catch (error) {
+        console.error('Failed to initialize audio:', error);
+      }
+    }
   }
 
   // Getter methods for state
@@ -176,9 +309,63 @@ export class AppState {
   }
 
   toggleAudioPlayback(): void {
+    const audioState = audioManager.getState();
+    
+    if (audioState.isPlaying) {
+      audioManager.pause();
+    } else {
+      audioManager.play(this.audioState.currentTime);
+    }
+    
     this.audioState = {
       ...this.audioState,
-      isPlaying: !this.audioState.isPlaying,
+      isPlaying: !audioState.isPlaying,
+    };
+    this.notifyListeners();
+  }
+
+  /**
+   * Play audio for a specific sentence
+   */
+  playSentenceAudio(sentence: Sentence): void {
+    // Find the timing data for this sentence from the lesson data
+    const lessonData = getLessonById('beginner-greetings'); // TODO: Make this dynamic based on current lesson
+    
+    if (lessonData?.content?.sentences) {
+      // Get the Chinese text by concatenating hanzi from all words
+      const sentenceChinese = sentence.words.map(word => word.hanzi).join('');
+      
+      const sentenceData = lessonData.content.sentences.find(
+        s => s.chinese === sentenceChinese
+      );
+      
+      if (sentenceData?.timing && sentenceData.timing.duration > 0) {
+        audioManager.playSentence({
+          start: sentenceData.timing.start,
+          end: sentenceData.timing.end,
+          duration: sentenceData.timing.duration,
+        });
+        
+        this.audioState = {
+          ...this.audioState,
+          isPlaying: true,
+        };
+        this.notifyListeners();
+      } else {
+        console.warn('No timing data found for sentence:', sentenceChinese);
+      }
+    }
+  }
+
+  /**
+   * Stop audio playback
+   */
+  stopAudioPlayback(): void {
+    audioManager.stop();
+    this.audioState = {
+      ...this.audioState,
+      isPlaying: false,
+      currentTime: 0,
     };
     this.notifyListeners();
   }
