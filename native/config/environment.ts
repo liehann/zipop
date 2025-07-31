@@ -68,7 +68,7 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
 
   // Development mode - choose config here:
   // Change this line to switch between localhost and device testing
-  return DEVELOPMENT_CONFIGS.localhost; // or DEVELOPMENT_CONFIGS.deviceTesting
+  return DEVELOPMENT_CONFIGS.deviceTesting; // Using IP address for Android device access
 };
 
 export const config = getEnvironmentConfig();

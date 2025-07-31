@@ -67,6 +67,63 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
   };
 
+  // Show loading screen if content is still loading
+  if (wordList.id === 'loading') {
+    return (
+      <SafeAreaView style={[styles.container, backgroundStyle]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={isDarkMode ? '#2a2a2a' : '#ffffff'}
+          translucent={false}
+        />
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+            Loading ZiPop...
+          </Text>
+          <Text style={[styles.loadingSubtext, { color: isDarkMode ? '#999999' : '#666666' }]}>
+            Connecting to backend at 192.168.1.68:3002
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error screen if content failed to load
+  if (wordList.id === 'error' || wordList.id === 'empty') {
+    return (
+      <SafeAreaView style={[styles.container, backgroundStyle]}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={isDarkMode ? '#2a2a2a' : '#ffffff'}
+          translucent={false}
+        />
+        <View style={styles.loadingContainer}>
+          <Text style={[styles.loadingText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+            {wordList.id === 'error' ? '❌ Connection Failed' : '📚 No Content Available'}
+          </Text>
+          <Text style={[styles.loadingSubtext, { color: isDarkMode ? '#999999' : '#666666' }]}>
+            {wordList.id === 'error' 
+              ? 'Cannot connect to backend at 192.168.1.68:3002. Please check if the backend is running.'
+              : 'No lessons found. Please check the backend database.'
+            }
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { borderColor: isDarkMode ? '#666666' : '#cccccc' }]}
+            onPress={() => {
+              console.log('🔄 Retrying content load...');
+              // Force app to reload by triggering a re-render
+              window.location?.reload?.() || require('react-native').DevSettings?.reload?.();
+            }}
+          >
+            <Text style={[styles.retryButtonText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
+              🔄 Retry
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Copy all Chinese text to clipboard
   const handleCopyChinese = async () => {
     try {
@@ -250,6 +307,32 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flexGrow: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  loadingSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
