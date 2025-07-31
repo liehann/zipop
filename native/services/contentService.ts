@@ -4,8 +4,8 @@
  */
 
 import { LessonData, BuiltInLesson, DocumentSource } from '../data/types';
-import { SavedDocument, WordListData } from '../types';
-import { processChineseText } from '../utils/textProcessing';
+import { SavedDocument, WordListData, Word, Sentence } from '../types';
+import { splitIntoWords, getPinyin, getEnglishTranslation, getSentencePinyin } from '../utils/textProcessing';
 import apiService from './apiService';
 
 class ContentService {
@@ -180,27 +180,47 @@ class ContentService {
   }
 
   /**
-   * Convert content to WordListData format (like the old lessonToWordListData)
+   * Convert content to WordListData format using pre-split sentences from API
    */
   contentToWordListData(content: LessonData): WordListData {
-    // Use the existing text processing system to convert the Chinese content to structured data
-    // Pass the content vocabulary for better word segmentation
-    const wordListData = processChineseText(content.content.chinese, content.title, content.vocabulary);
-    
-    // Override sentence translations with the provided English translations
-    if (content.content.sentences && content.content.sentences.length > 0) {
-      content.content.sentences.forEach((sentencePair, index) => {
-        if (wordListData.sentences[index]) {
-          wordListData.sentences[index].sentenceEnglish = sentencePair.english;
-        }
-      });
-    }
+    // Use the pre-split sentences from the API instead of processing the full text
+    const processedSentences = content.content.sentences.map((sentencePair, sentenceIndex) => {
+      // Process each individual sentence to get words
+      const words = this.processSentenceToWords(sentencePair.chinese, sentenceIndex, content.vocabulary);
+      
+      return {
+        id: `sentence-${sentenceIndex}`,
+        words,
+        sentencePinyin: getSentencePinyin(sentencePair.chinese),
+        sentenceEnglish: sentencePair.english
+      };
+    });
     
     return {
-      ...wordListData,
       id: content.id,
       title: content.title,
+      sentences: processedSentences,
+      dateCreated: new Date().toISOString(),
+      dateModified: new Date().toISOString()
     };
+  }
+
+  /**
+   * Process a single sentence into words with proper IDs
+   */
+  private processSentenceToWords(
+    sentenceText: string,
+    sentenceIndex: number,
+    vocabulary?: Array<{chinese: string; english: string}>
+  ): Word[] {
+    const words = splitIntoWords(sentenceText, vocabulary);
+    
+    return words.map((wordText, wordIndex) => ({
+      id: `word-${sentenceIndex}-${wordIndex}`,
+      hanzi: wordText,
+      pinyin: getPinyin(wordText),
+      english: getEnglishTranslation(wordText, vocabulary)
+    }));
   }
 
   /**

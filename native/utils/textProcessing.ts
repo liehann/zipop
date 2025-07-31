@@ -94,16 +94,19 @@ const mockSentenceTranslations: Record<string, string> = {
 };
 
 /**
- * Split Chinese text into sentences based on punctuation
+ * Split Chinese text into sentences based on line breaks, preserving punctuation within sentences
  */
 export function splitIntoSentences(text: string): string[] {
-  // Remove extra whitespace and split by Chinese punctuation
-  const cleanText = text.trim().replace(/\s+/g, '');
-  const sentences = cleanText.split(/[。！？；]/);
+  // Preserve the text as-is, only split on explicit line breaks if present
+  const cleanText = text.trim();
+  const sentences = cleanText.split(/\n+/).filter(s => s.trim().length > 0);
   
-  return sentences
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
+  // If no line breaks, return the entire text as one sentence
+  if (sentences.length === 0) {
+    return [cleanText];
+  }
+  
+  return sentences.map(s => s.trim());
 }
 
 /**

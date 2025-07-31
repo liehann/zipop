@@ -4,8 +4,8 @@
  */
 
 import { DataIndex, LessonData, BuiltInLesson, DocumentSource } from './types';
-import { SavedDocument, WordListData } from '../types';
-import { processChineseText } from '../utils/textProcessing';
+import { SavedDocument, WordListData, Word, Sentence } from '../types';
+import { splitIntoWords, getPinyin, getEnglishTranslation, getSentencePinyin } from '../utils/textProcessing';
 
 // Import data index
 import dataIndex from './index.json';
@@ -75,26 +75,34 @@ export function getFeaturedLessons(): LessonData[] {
 }
 
 /**
- * Convert a lesson data to a WordListData format for the app
+ * Convert a lesson data to a WordListData format using pre-split sentences
  */
 export function lessonToWordListData(lesson: LessonData): WordListData {
-  // Use the text processing system to convert the Chinese content to structured data
-  // Pass the lesson vocabulary for better word segmentation
-  const wordListData = processChineseText(lesson.content.chinese, lesson.title, lesson.vocabulary);
-  
-  // Override sentence translations with the provided English translations
-  if (lesson.content.sentences && lesson.content.sentences.length > 0) {
-    lesson.content.sentences.forEach((sentencePair, index) => {
-      if (wordListData.sentences[index]) {
-        wordListData.sentences[index].sentenceEnglish = sentencePair.english;
-      }
-    });
-  }
+  // Use the pre-split sentences from the lesson data instead of processing the full text
+  const processedSentences = lesson.content.sentences.map((sentencePair, sentenceIndex) => {
+    // Process each individual sentence to get words
+    const words = splitIntoWords(sentencePair.chinese, lesson.vocabulary);
+    const processedWords = words.map((wordText, wordIndex) => ({
+      id: `word-${sentenceIndex}-${wordIndex}`,
+      hanzi: wordText,
+      pinyin: getPinyin(wordText),
+      english: getEnglishTranslation(wordText, lesson.vocabulary)
+    }));
+    
+    return {
+      id: `sentence-${sentenceIndex}`,
+      words: processedWords,
+      sentencePinyin: getSentencePinyin(sentencePair.chinese),
+      sentenceEnglish: sentencePair.english
+    };
+  });
   
   return {
-    ...wordListData,
     id: lesson.id,
     title: lesson.title,
+    sentences: processedSentences,
+    dateCreated: new Date().toISOString(),
+    dateModified: new Date().toISOString()
   };
 }
 
