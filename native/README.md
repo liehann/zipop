@@ -1,7 +1,7 @@
 # ZiPop - Multilingual Reading App
 
 ## Overview
-ZiPop is a React Native multilingual reading app designed for Chinese language learning. It displays Chinese text with automatic pinyin romanization and English translations, featuring both built-in curated lessons and user-created content. The app is built with TypeScript and supports iOS, Android, and Web platforms.
+ZiPop is a React Native multilingual reading app designed for Chinese language learning. It displays Chinese text with automatic pinyin romanization and English translations, featuring dynamic content loading from a backend API. The app is built with TypeScript and supports iOS, Android, and Web platforms.
 
 ## Technical Stack
 - **Framework**: React Native 0.80.1 with React 19.1.0
@@ -9,9 +9,10 @@ ZiPop is a React Native multilingual reading app designed for Chinese language l
 - **Platforms**: iOS, Android, Web (via React Native Web + Webpack)
 - **Build Tools**: Metro (mobile), Webpack (web)  
 - **Testing**: Jest with React Test Renderer
-- **Architecture**: Clean architecture with domain layer separation
+- **Architecture**: Clean architecture with domain layer separation and service layer
 - **Pinyin Library**: `pinyin@4.0.0` by @hotoo for accurate Chinese-to-pinyin conversion
-- **Data System**: Build-time JSON imports for lesson content
+- **Data System**: API-based content loading with intelligent caching
+- **Backend**: Node.js + Fastify + PostgreSQL (see `../backend/README.md`)
 
 ## Major Features
 
@@ -22,12 +23,13 @@ ZiPop is a React Native multilingual reading app designed for Chinese language l
 - **Word Segmentation**: Intelligent spacing between words in sentences
 - **Error Handling**: Graceful fallback for non-Chinese text
 
-### 📚 Built-in Lesson System
-- **Curated Content**: Professional lessons loaded at build time
-- **Structured Data**: JSON-based lesson format with metadata
-- **Multiple Categories**: Greetings, food/dining, shopping, time expressions
+### 📚 Dynamic Content System
+- **Backend API**: Professional lessons loaded from PostgreSQL database
+- **Real-time Loading**: Content fetched on app startup and cached for performance
+- **Multiple Categories**: Greetings, food/dining, shopping, time expressions, social
 - **Difficulty Levels**: Beginner, intermediate, and advanced content
 - **Rich Metadata**: Estimated time, tags, vocabulary lists, descriptions
+- **Audio Streaming**: Audio files served from backend for pronunciation practice
 
 ### 🎯 Interactive Reading Interface
 - **Word-Based Learning**: Focus on individual vocabulary with clear pinyin-to-hanzi mapping
@@ -46,11 +48,11 @@ The app follows a clean architecture pattern with clear separation between UI, b
 - Business logic for word selection and audio control
 - No UI dependencies - fully testable
 
-**📊 Data Layer** (`data/`)
-- Build-time lesson loading system
-- TypeScript interfaces for all data structures
-- Automatic pinyin processing pipeline
-- Lesson categorization and metadata
+**📊 Service Layer** (`services/`)
+- `apiService.ts` - HTTP client for backend API calls
+- `contentService.ts` - Content loading with intelligent caching
+- Backend integration with error handling and retry logic
+- TypeScript interfaces shared between frontend and backend
 
 **🎯 Components** (`components/`)
 - `WordGrid.tsx` - Displays Chinese words with Pinyin in a responsive grid
@@ -67,6 +69,7 @@ The app follows a clean architecture pattern with clear separation between UI, b
 - `pinyinUtils.ts` - Pinyin conversion functions using real library
 - `textProcessing.ts` - Chinese text parsing and word segmentation
 - `storage.ts` - Document persistence and retrieval
+- `audioUtils.ts` - Audio streaming from backend with platform compatibility
 
 **📱 App.tsx**
 - Pure layout structure and navigation logic
@@ -115,40 +118,38 @@ interface LessonData {
 }
 ```
 
-## Built-in Content System
+## Dynamic Content System
 
-### Current Lessons
+### Current Content (loaded from backend)
 1. **Beginner Greetings** - Essential Chinese greetings and polite expressions
 2. **Shopping Basics** - Essential phrases for shopping and bargaining
 3. **Restaurant Ordering** - Learn to order food and drinks in Chinese restaurants
 4. **Time and Dates** - Time expressions, dates, and scheduling phrases
+5. **Coffee and Cake** - Social interactions and friendship vocabulary
 
 ### Content Categories
-- **Greetings** - Basic greetings and politeness
-- **Food** - Restaurant and dining vocabulary  
-- **Shopping** - Commerce and shopping interactions
-- **Time** - Time expressions and scheduling
+- **Greetings & Politeness** - Basic greetings and polite expressions
+- **Food & Dining** - Restaurant and dining vocabulary  
+- **Shopping & Commerce** - Commerce and shopping interactions
+- **Time & Dates** - Time expressions and scheduling
+- **Social & Friendship** - Social interactions and daily activities
 
-### Adding New Lessons
-1. Create JSON file in `data/lessons/`
-2. Update `data/index.json` with lesson metadata
-3. Add import to `data/dataLoader.ts`
-4. Lesson appears automatically in app
+### Adding New Content
+1. Use backend API to create new content via POST endpoints
+2. Or add directly to PostgreSQL database
+3. Content appears immediately in app (no rebuild required)
+4. Audio files can be uploaded and streamed from backend
 
 ## File Structure
 ```
 native/
 ├── App.tsx                      # Main application component
-├── data/                        # Lesson content system
-│   ├── README.md               # Data system documentation
-│   ├── index.json              # Lesson index and metadata
-│   ├── types.ts                # Data structure interfaces
-│   ├── dataLoader.ts           # Build-time lesson loading
-│   └── lessons/                # Individual lesson files
-│       ├── beginner-greetings.json
-│       ├── restaurant-ordering.json
-│       ├── shopping-basics.json
-│       └── time-and-dates.json
+├── services/                    # API service layer
+│   ├── apiService.ts           # HTTP client for backend API
+│   └── contentService.ts       # Content loading with caching
+├── data/                        # Legacy data system (types only)
+│   ├── README.md               # Data system documentation  
+│   └── types.ts                # Data structure interfaces
 ├── domain/
 │   └── AppState.ts             # Business logic & state management
 ├── hooks/
@@ -161,7 +162,8 @@ native/
 ├── utils/
 │   ├── pinyinUtils.ts          # Pinyin conversion utilities
 │   ├── textProcessing.ts       # Chinese text processing
-│   └── storage.ts              # Document persistence
+│   ├── storage.ts              # Document persistence
+│   └── audioUtils.ts           # Audio streaming from backend
 ├── types.ts                    # Core TypeScript interfaces
 ├── sampleData.ts               # Legacy sample data
 ├── index.html                  # Web HTML with flexbox constraints
@@ -205,6 +207,13 @@ batchToPinyin(['你', '好', '世', '界']); // → ["nǐ", "hǎo", "shì", "ji�
 
 ## Development Workflow
 
+### Prerequisites
+**Backend must be running** for the app to load content:
+```bash
+cd ../backend
+npm run dev    # Starts backend API on localhost:3002
+```
+
 ### Mobile Development
 ```bash
 # iOS
@@ -236,6 +245,10 @@ const { toPinyin, sentenceToPinyin } = require('./utils/pinyinUtils');
 console.log('你好 →', toPinyin('你好'));
 console.log('你好吗 →', sentenceToPinyin('你好吗'));
 "
+
+# Test backend connectivity
+curl http://localhost:3002/health
+curl http://localhost:3002/api/v1/content
 ```
 
 ## Layout Structure
@@ -278,12 +291,14 @@ The app has three main views:
 
 ## User Experience Features
 
-### Built-in Lessons Interface
-- **Visual Distinction**: Built-in lessons have colored level badges and rich metadata
-- **Category Organization**: Lessons grouped by topic (greetings, food, shopping, time)
+### Dynamic Content Interface
+- **API-Powered Loading**: Content loaded from backend with loading states
+- **Visual Distinction**: Content items have colored level badges and rich metadata
+- **Category Organization**: Content grouped by topic (greetings, food, shopping, time, social)
 - **Level Indicators**: Clear beginner/intermediate/advanced labeling
 - **Estimated Time**: Shows approximate study duration
-- **Professional Content**: Curated lessons with proper translations
+- **Professional Content**: Curated content with proper translations
+- **Real-time Updates**: New content appears without app updates
 
 ### Text Processing
 - **Automatic Pinyin**: Chinese input automatically gets pinyin using real library
@@ -305,19 +320,19 @@ The app has three main views:
 - **Type Safety**: Full TypeScript coverage with proper interfaces
 - **Document Persistence**: AsyncStorage for saving user-created content
 
-## Build System Integration
+## Backend Integration
 
-### JSON Import Support
-- **TypeScript Configuration**: `resolveJsonModule: true` enables JSON imports
-- **Build-Time Loading**: All lesson data imported at compile time
-- **Type Safety**: JSON content validated against TypeScript interfaces
-- **Bundle Optimization**: Only referenced lessons included in final bundle
+### API Service Layer
+- **HTTP Client**: Centralized API calls with error handling
+- **Content Caching**: Intelligent caching for better performance
+- **Type Safety**: Shared TypeScript interfaces between frontend and backend
+- **Environment Detection**: Automatic dev/production API URL selection
 
 ### Cross-Platform Building
-- **Metro Bundler**: Native iOS/Android builds with full JSON support
-- **Webpack**: Web builds with proper JSON loading and type checking
+- **Metro Bundler**: Native iOS/Android builds with API integration
+- **Webpack**: Web builds with proper CORS handling and API calls
 - **Hot Reload**: Development changes reflected immediately
-- **Production Ready**: Optimized builds for all platforms
+- **Production Ready**: Optimized builds for all platforms with proper API endpoints
 
 ## Future Expansion Ready
 
@@ -348,12 +363,13 @@ const pinyinNumeric = pinyin(text, { style: PINYIN_STYLES.TONE2 });
 const pinyinNormal = pinyin(text, { style: PINYIN_STYLES.NORMAL });
 ```
 
-### Extending the Data System
-To add new lesson types:
-1. Extend the `LessonData` interface in `data/types.ts`
-2. Update the data loader processing pipeline
-3. Modify the UI components to handle new data types
-4. Add new categories to the index file
+### Extending the Content System
+To add new content types:
+1. Extend the backend API endpoints (see `../backend/README.md`)
+2. Update the `LessonData` interface in `data/types.ts`
+3. Modify the contentService for new data processing
+4. Update UI components to handle new data types
+5. Add new categories via backend API
 
 ### Web Platform Setup
 Ensure proper flexbox styling and JSON module support:
@@ -361,4 +377,11 @@ Ensure proper flexbox styling and JSON module support:
 - `tsconfig.json` must have `resolveJsonModule: true`
 - `webpack.config.js` configured for JSON imports
 
-The data system and pinyin integration make ZiPop a comprehensive platform for Chinese language learning with both professional content and user customization capabilities.
+The backend integration, pinyin system, and dynamic content loading make ZiPop a comprehensive platform for Chinese language learning with scalable content management, real-time updates, and both professional content and user customization capabilities.
+
+## Backend Dependencies
+This React Native app requires the ZiPop backend to be running:
+- **Backend API**: http://localhost:3002 (development)
+- **Database**: PostgreSQL with lesson content
+- **Audio Streaming**: MP3 files served from backend
+- **Setup**: See `../backend/README.md` for backend setup instructions
