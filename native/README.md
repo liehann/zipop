@@ -208,10 +208,65 @@ batchToPinyin(['你', '好', '世', '界']); // → ["nǐ", "hǎo", "shì", "ji�
 ## Development Workflow
 
 ### Prerequisites
+
+#### Backend Dependencies
 **Backend must be running** for the app to load content:
 ```bash
 cd ../backend
 npm run dev    # Starts backend API on localhost:3002
+```
+
+#### Android Development Setup
+**Java Requirements:**
+- **Java 17** (required for React Native Android builds)
+- **NOT** Java 21, 22, 23, or 24 (these cause compatibility issues)
+
+**Environment Variables Setup:**
+React Native requires specific environment variables to be set:
+
+**On macOS:**
+```bash
+# Find your Java 17 installation
+/usr/libexec/java_home -V
+
+# Set environment variables (replace paths with your actual paths)
+export JAVA_HOME="/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH"
+
+# Make permanent by adding to ~/.zshrc or ~/.bashrc
+echo 'export JAVA_HOME="/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH"' >> ~/.zshrc
+```
+
+**On Linux:**
+```bash
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH"
+```
+
+**On Windows:**
+```cmd
+set JAVA_HOME=C:\Program Files\OpenJDK\openjdk-17
+set ANDROID_HOME=C:\Users\%USERNAME%\AppData\Local\Android\Sdk
+set PATH=%ANDROID_HOME%\platform-tools;%ANDROID_HOME%\tools;%PATH%
+```
+
+**Android SDK Requirements:**
+- **Android SDK API Level 35** (android-35)
+- **Android Studio** with SDK Manager
+- **Android Emulator** or physical device
+
+**Verification:**
+```bash
+# Check React Native environment
+npx react-native doctor
+
+# Should show:
+# ✓ JDK - Version found: 17.x.x (supported: >= 17 <= 20)
+# ✓ Android SDK - Version found: 35.0.0
 ```
 
 ### Mobile Development
@@ -219,7 +274,7 @@ npm run dev    # Starts backend API on localhost:3002
 # iOS
 npm run ios
 
-# Android  
+# Android (requires environment setup above)
 npm run android
 
 # Metro bundler
@@ -349,6 +404,46 @@ The app has three main views:
 - **Analytics**: Learning progress and performance tracking
 - **Offline Support**: Cached content for offline reading
 - **Cloud Sync**: Cross-device document synchronization
+
+## Troubleshooting
+
+### Common Android Issues
+
+**"JDK - Version found: 24.0.1, Version supported: >= 17 <= 20"**
+```bash
+# Install Java 17 (macOS with Homebrew)
+brew install openjdk@17
+
+# Set JAVA_HOME to Java 17
+export JAVA_HOME="/opt/homebrew/Cellar/openjdk@17/17.0.15/libexec/openjdk.jdk/Contents/Home"
+```
+
+**"Android SDK - Versions found: N/A"**
+```bash
+# Verify Android SDK installation
+ls -la ~/Library/Android/sdk/platforms  # Should show android-35
+
+# Set ANDROID_HOME correctly
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
+```
+
+**"Metro bundler not running"**
+```bash
+# Start Metro bundler separately
+npm run start
+
+# Then in another terminal
+npm run android
+```
+
+**Build fails with "Backend not running"**
+```bash
+# The app requires the backend API to load content
+cd ../backend && npm run dev
+# Then start the app
+cd ../native && npm run android
+```
 
 ## Development Notes
 
