@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { appState } from '../domain/AppState';
 
 // Custom hook to connect React components to the AppState domain layer
 export const useAppState = () => {
-  const [, forceUpdate] = useState({});
+  const [, forceUpdate] = useState(0);
+
+  const handleStateChange = useCallback(() => {
+    forceUpdate(prev => prev + 1); // Use counter instead of new object
+  }, []);
 
   useEffect(() => {
-    const handleStateChange = () => {
-      forceUpdate({}); // Force re-render when state changes
-    };
 
     // Subscribe to state changes
     appState.addListener(handleStateChange);
@@ -18,6 +19,31 @@ export const useAppState = () => {
       appState.removeListener(handleStateChange);
     };
   }, []);
+
+  // Memoize bound functions to prevent infinite loops in useEffect dependencies
+  const selectWord = useCallback((word: any) => appState.selectWord(word), []);
+  const selectSentence = useCallback((sentence: any) => appState.selectSentence(sentence), []);
+  const clearSelection = useCallback(() => appState.clearSelection(), []);
+  const setCurrentSentence = useCallback((sentenceId: string | null) => appState.setCurrentSentence(sentenceId), []);
+  
+  const setCurrentView = useCallback((view: any) => appState.setCurrentView(view), []);
+  const goToReader = useCallback(() => appState.goToReader(), []);
+  const goToAddText = useCallback(() => appState.goToAddText(), []);
+  const goToChooseText = useCallback(() => appState.goToChooseText(), []);
+  
+  const loadDocument = useCallback((document: any) => appState.loadDocument(document), []);
+  const saveCurrentDocument = useCallback((document: any) => appState.saveCurrentDocument(document), []);
+  
+  const toggleAudioPlayback = useCallback(() => appState.toggleAudioPlayback(), []);
+  const playSentenceAudio = useCallback((sentence: any) => appState.playSentenceAudio(sentence), []);
+  const stopAudioPlayback = useCallback(() => appState.stopAudioPlayback(), []);
+  const seekAudio = useCallback((time: number) => appState.seekAudio(time), []);
+  const goToPreviousSentence = useCallback(() => appState.goToPreviousSentence(), []);
+  const goToNextSentence = useCallback(() => appState.goToNextSentence(), []);
+  const repeatCurrentSentence = useCallback(() => appState.repeatCurrentSentence(), []);
+  const restartAudio = useCallback(() => appState.restartAudio(), []);
+  const updateAudioTime = useCallback((currentTime: number) => appState.updateAudioTime(currentTime), []);
+  const formatTime = useCallback((timeInSeconds: number) => appState.formatTime(timeInSeconds), []);
 
   return {
     // State getters
@@ -31,32 +57,32 @@ export const useAppState = () => {
     currentSentenceId: appState.getCurrentSentenceId(),
     currentView: appState.getCurrentView(),
     
-    // Actions
-    selectWord: appState.selectWord.bind(appState),
-    selectSentence: appState.selectSentence.bind(appState),
-    clearSelection: appState.clearSelection.bind(appState),
-    setCurrentSentence: appState.setCurrentSentence.bind(appState),
+    // Actions (memoized)
+    selectWord,
+    selectSentence,
+    clearSelection,
+    setCurrentSentence,
     
-    // Navigation actions
-    setCurrentView: appState.setCurrentView.bind(appState),
-    goToReader: appState.goToReader.bind(appState),
-    goToAddText: appState.goToAddText.bind(appState),
-    goToChooseText: appState.goToChooseText.bind(appState),
+    // Navigation actions (memoized)
+    setCurrentView,
+    goToReader,
+    goToAddText,
+    goToChooseText,
     
-    // Document management
-    loadDocument: appState.loadDocument.bind(appState),
-    saveCurrentDocument: appState.saveCurrentDocument.bind(appState),
+    // Document management (memoized)
+    loadDocument,
+    saveCurrentDocument,
     
-    // Audio actions
-    toggleAudioPlayback: appState.toggleAudioPlayback.bind(appState),
-    playSentenceAudio: appState.playSentenceAudio.bind(appState),
-    stopAudioPlayback: appState.stopAudioPlayback.bind(appState),
-    seekAudio: appState.seekAudio.bind(appState),
-    goToPreviousSentence: appState.goToPreviousSentence.bind(appState),
-    goToNextSentence: appState.goToNextSentence.bind(appState),
-    repeatCurrentSentence: appState.repeatCurrentSentence.bind(appState),
-    restartAudio: appState.restartAudio.bind(appState),
-    updateAudioTime: appState.updateAudioTime.bind(appState),
-    formatTime: appState.formatTime.bind(appState),
+    // Audio actions (memoized)
+    toggleAudioPlayback,
+    playSentenceAudio,
+    stopAudioPlayback,
+    seekAudio,
+    goToPreviousSentence,
+    goToNextSentence,
+    repeatCurrentSentence,
+    restartAudio,
+    updateAudioTime,
+    formatTime,
   };
 }; 

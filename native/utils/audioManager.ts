@@ -133,10 +133,11 @@ class AudioManager {
         // Enable playback in silence mode for iOS
         Sound.setCategory('Playback');
 
-        // Use the audioUrl directly since it's already a full URL
-        const audioSource = { uri: audioUrl };
+        // For remote URLs, pass the URL string directly to react-native-sound
+        // For local files, you would use: new Sound('filename.mp3', Sound.MAIN_BUNDLE, callback)
+        // For remote URLs, use: new Sound(url, null, callback)
         
-        this.rnSound = new Sound(audioSource, (error: any) => {
+        this.rnSound = new Sound(audioUrl, null, (error: any) => {
           if (error) {
             console.error('Failed to load sound:', error);
             this.config.onError?.(`Failed to load sound: ${error.message}`);
@@ -282,7 +283,7 @@ class AudioManager {
           this.config.onTimeUpdate?.(this.currentTime);
         });
       }
-    }, 100);
+    }, 250); // Reduced frequency from 100ms to 250ms to prevent excessive updates
   }
 
   private stopTimeUpdateInterval(): void {

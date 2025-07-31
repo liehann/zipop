@@ -171,8 +171,8 @@ export class AppState {
   private setupAudioManager(): void {
     const config: AudioManagerConfig = {
       onTimeUpdate: (currentTime: number) => {
-        this.updateAudioTime(currentTime);
-        this.updateCurrentSentenceFromTime(currentTime);
+        // Combine both updates into a single call to prevent multiple re-renders
+        this.updateAudioState(currentTime);
       },
       onPlaybackEnd: () => {
         this.audioState = {
@@ -195,106 +195,7 @@ export class AppState {
     (audioManager as any).config = config;
   }
 
-  /**
-   * Update the current sentence based on audio playback time
-   */
-  private updateCurrentSentenceFromTime(currentTime: number): void {
-    if (!this.currentLessonData?.content?.sentences) {
-      console.log('No lesson data available for sentence tracking');
-      return;
-    }
 
-    // Find the appropriate sentence to highlight based on current time
-    // This prevents flickering during silence gaps between sentences
-    let playingSentenceIndex = -1;
-    
-    // First, try to find a sentence that's currently playing (within its timing range)
-    let playingSentence = this.currentLessonData.content.sentences.find((sentence: any, index: number) => {
-      if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
-        const isInRange = currentTime >= sentence.timing.start && currentTime <= sentence.timing.end;
-        if (isInRange) {
-          console.log(`Found actively playing sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
-          playingSentenceIndex = index;
-        }
-        return isInRange;
-      }
-      return false;
-    });
-
-    // If no sentence is actively playing, find the most appropriate sentence to highlight
-    if (!playingSentence) {
-      for (let index = 0; index < this.currentLessonData.content.sentences.length; index++) {
-        const sentence = this.currentLessonData.content.sentences[index];
-        
-        if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
-          // If we're past this sentence's end time, and there's a next sentence
-          if (currentTime > sentence.timing.end) {
-            const nextIndex = index + 1;
-            if (nextIndex < this.currentLessonData.content.sentences.length) {
-              const nextSentence = this.currentLessonData.content.sentences[nextIndex];
-              // If the next sentence hasn't started yet, or we're before it starts, show the next sentence
-              if (!nextSentence.timing || currentTime < nextSentence.timing.start || !nextSentence.timing.start) {
-                console.log(`Between sentences: jumping to next sentence at time ${currentTime} (index ${nextIndex}):`, nextSentence.chinese);
-                playingSentence = nextSentence;
-                playingSentenceIndex = nextIndex;
-                break;
-              }
-            } else {
-              // This is the last sentence and we're past its end - keep showing it
-              console.log(`Past last sentence end, keeping it highlighted at time ${currentTime} (index ${index}):`, sentence.chinese);
-              playingSentence = sentence;
-              playingSentenceIndex = index;
-              break;
-            }
-          }
-          // If we're before this sentence starts, show it (we're approaching it)
-          else if (currentTime < sentence.timing.start) {
-            console.log(`Before sentence start, showing upcoming sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
-            playingSentence = sentence;
-            playingSentenceIndex = index;
-            break;
-          }
-        }
-      }
-    }
-
-    if (playingSentence && playingSentenceIndex >= 0) {
-      // Use index-based matching instead of text-based matching
-      // This assumes the lesson data sentences and wordList sentences are in the same order
-      const matchingSentence = this.wordList.sentences[playingSentenceIndex];
-
-      if (matchingSentence) {
-        console.log(`Using index-based matching: found sentence at index ${playingSentenceIndex} with ID: ${matchingSentence.id}, current ID: ${this.sentenceState.currentSentenceId}`);
-        
-        if (this.sentenceState.currentSentenceId !== matchingSentence.id) {
-          console.log(`Updating current sentence ID to: ${matchingSentence.id}`);
-          
-          // Update current sentence
-          this.sentenceState = {
-            ...this.sentenceState,
-            currentSentenceId: matchingSentence.id,
-          };
-          
-          // Don't automatically select the sentence for translation - this should only happen on manual tap
-          // Keep the existing selectedSentence unless it was explicitly cleared
-          
-          this.notifyListeners();
-        }
-      } else {
-        console.log(`No sentence found at index ${playingSentenceIndex} in wordList (total: ${this.wordList.sentences.length})`);
-      }
-    } else {
-      // If no sentence is playing, keep the current selection but update current sentence to null
-      // This prevents losing the translation display when audio is between sentences
-      if (this.sentenceState.currentSentenceId !== null) {
-        this.sentenceState = {
-          ...this.sentenceState,
-          currentSentenceId: null,
-        };
-        this.notifyListeners();
-      }
-    }
-  }
 
   private async initializeAudio(): Promise<void> {
     if (this.currentLessonAudio?.enabled && this.currentLessonAudio?.file) {
@@ -659,12 +560,111 @@ export class AppState {
     }
   }
 
+  /**
+   * Combined audio state update that handles both time and sentence updates
+   * This prevents multiple re-renders by batching updates into a single call
+   */
+  private updateAudioState(currentTime: number): void {
+    let shouldUpdate = false;
+    let newAudioState = { ...this.audioState };
+    let newSentenceState = { ...this.sentenceState };
+
+    // Update audio time only if it has changed significantly
+    if (Math.abs(this.audioState.currentTime - currentTime) > 0.01) { // 10ms threshold
+      newAudioState.currentTime = currentTime;
+      shouldUpdate = true;
+    }
+
+    // Update current sentence based on audio playback time
+    if (this.currentLessonData?.content?.sentences) {
+      const newSentenceId = this.findCurrentSentenceId(currentTime);
+      if (this.sentenceState.currentSentenceId !== newSentenceId) {
+        newSentenceState.currentSentenceId = newSentenceId;
+        shouldUpdate = true;
+      }
+    }
+
+    // Only update state and notify listeners if something actually changed
+    if (shouldUpdate) {
+      this.audioState = newAudioState;
+      this.sentenceState = newSentenceState;
+      this.notifyListeners();
+    }
+  }
+
+  /**
+   * Find the appropriate sentence ID based on current playback time
+   */
+  private findCurrentSentenceId(currentTime: number): string | null {
+    if (!this.currentLessonData?.content?.sentences) {
+      return null;
+    }
+
+    let playingSentenceIndex = -1;
+    
+    // First, try to find a sentence that's currently playing (within its timing range)
+    let playingSentence = this.currentLessonData.content.sentences.find((sentence: any, index: number) => {
+      if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
+        const isInRange = currentTime >= sentence.timing.start && currentTime <= sentence.timing.end;
+        if (isInRange) {
+          playingSentenceIndex = index;
+        }
+        return isInRange;
+      }
+      return false;
+    });
+
+    // If no sentence is actively playing, find the most appropriate sentence to highlight
+    if (!playingSentence) {
+      for (let index = 0; index < this.currentLessonData.content.sentences.length; index++) {
+        const sentence = this.currentLessonData.content.sentences[index];
+        
+        if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
+          // If we're past this sentence's end time, and there's a next sentence
+          if (currentTime > sentence.timing.end) {
+            const nextIndex = index + 1;
+            if (nextIndex < this.currentLessonData.content.sentences.length) {
+              const nextSentence = this.currentLessonData.content.sentences[nextIndex];
+              // If the next sentence hasn't started yet, or we're before it starts, show the next sentence
+              if (!nextSentence.timing || currentTime < nextSentence.timing.start || !nextSentence.timing.start) {
+                playingSentence = nextSentence;
+                playingSentenceIndex = nextIndex;
+                break;
+              }
+            } else {
+              // This is the last sentence and we're past its end - keep showing it
+              playingSentence = sentence;
+              playingSentenceIndex = index;
+              break;
+            }
+          }
+          // If we're before this sentence starts, show it (we're approaching it)
+          else if (currentTime < sentence.timing.start) {
+            playingSentence = sentence;
+            playingSentenceIndex = index;
+            break;
+          }
+        }
+      }
+    }
+
+    if (playingSentence && playingSentenceIndex >= 0) {
+      const matchingSentence = this.wordList.sentences[playingSentenceIndex];
+      return matchingSentence?.id || null;
+    }
+
+    return null;
+  }
+
   updateAudioTime(currentTime: number): void {
-    this.audioState = {
-      ...this.audioState,
-      currentTime,
-    };
-    this.notifyListeners();
+    // Only update if the time has actually changed to avoid unnecessary re-renders
+    if (Math.abs(this.audioState.currentTime - currentTime) > 0.01) { // 10ms threshold
+      this.audioState = {
+        ...this.audioState,
+        currentTime,
+      };
+      this.notifyListeners();
+    }
   }
 
   // Format time for display
