@@ -224,6 +224,10 @@ export class AppState {
     return this.wordList;
   }
 
+  getCurrentVocabulary(): Array<{ chinese: string; english: string }> {
+    return this.currentLessonData?.vocabulary || [];
+  }
+
   getAudioState(): AudioState {
     return this.audioState;
   }

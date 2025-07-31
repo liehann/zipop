@@ -48,6 +48,7 @@ export const useAppState = () => {
   return {
     // State getters
     wordList: appState.getWordList(),
+    vocabulary: appState.getCurrentVocabulary(),
     audioState: appState.getAudioState(),
     translationState: appState.getTranslationState(),
     sentenceState: appState.getSentenceState(),

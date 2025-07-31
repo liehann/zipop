@@ -11,12 +11,14 @@ import { Word, Sentence } from '../types';
 interface TranslationViewProps {
   selectedWord: Word | null;
   selectedSentence: Sentence | null;
+  vocabulary: Array<{ chinese: string; english: string }>;
   onSentenceSelect: (sentence: Sentence) => void;
 }
 
 const TranslationView: React.FC<TranslationViewProps> = ({ 
   selectedWord, 
   selectedSentence, 
+  vocabulary,
   onSentenceSelect 
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -35,13 +37,18 @@ const TranslationView: React.FC<TranslationViewProps> = ({
   const getCharacterBreakdown = (word: Word) => {
     const chars = Array.from(word.hanzi);
     const pinyinParts = word.pinyin.split(' ');
-    const englishParts = word.english.split('/');
     
-    return chars.map((char, index) => ({
-      chinese: char,
-      pinyin: pinyinParts[index] || word.pinyin,
-      english: englishParts[index] || word.english,
-    }));
+    return chars.map((char, index) => {
+      // Look up individual character translation from vocabulary
+      const charVocab = vocabulary.find(v => v.chinese === char);
+      const charTranslation = charVocab ? charVocab.english : char;
+      
+      return {
+        chinese: char,
+        pinyin: pinyinParts[index] || word.pinyin,
+        english: charTranslation,
+      };
+    });
   };
 
   const handleSentencePress = () => {

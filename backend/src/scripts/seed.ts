@@ -3,6 +3,7 @@
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
 import fs from 'fs/promises';
+import { cedictService } from '../services/cedictService';
 
 // Import the existing data (we'll read from the native app's data directory)
 const NATIVE_DATA_PATH = path.join(__dirname, '../../../native/data');
@@ -52,6 +53,10 @@ async function seedDatabase() {
   console.log('🌱 Starting database seeding...');
 
   try {
+    // Load CEDICT dictionary first
+    await cedictService.loadDictionary();
+    const dictStats = cedictService.getStats();
+    console.log(`📚 CEDICT dictionary ready with ${dictStats.totalEntries} entries`);
     // Read the index file
     const indexContent = await fs.readFile(INDEX_FILE_PATH, 'utf-8');
     const indexData: IndexData = JSON.parse(indexContent);
@@ -99,6 +104,17 @@ async function seedDatabase() {
 
         console.log(`  📖 Processing content: ${lessonData.title}`);
 
+        // Enhance vocabulary with CEDICT translations
+        const originalVocabCount = lessonData.vocabulary.length;
+        const enhancedVocabulary = cedictService.enhanceVocabulary(lessonData.vocabulary);
+        
+        // Count how many words got enhanced translations
+        const enhancedCount = enhancedVocabulary.filter((item, index) => 
+          item.english !== lessonData.vocabulary[index].english
+        ).length;
+        
+        console.log(`    📝 Enhanced ${enhancedCount}/${originalVocabCount} vocabulary items with CEDICT translations`);
+
         await prisma.content.create({
           data: {
             id: lessonData.id,
@@ -111,7 +127,7 @@ async function seedDatabase() {
             featured: lessonRef.featured,
             order: lessonRef.order,
             content: lessonData.content,
-            vocabulary: lessonData.vocabulary,
+            vocabulary: enhancedVocabulary, // Use enhanced vocabulary
             metadata: lessonData.metadata,
             audio: lessonData.audio || null,
           },

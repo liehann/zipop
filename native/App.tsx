@@ -38,6 +38,7 @@ function App(): React.JSX.Element {
   // Use the domain layer through the custom hook
   const {
     wordList,
+    vocabulary,
     audioState,
     selectedWord,
     selectedSentence,
@@ -276,6 +277,7 @@ function App(): React.JSX.Element {
             <TranslationView 
               selectedWord={selectedWord} 
               selectedSentence={selectedSentence}
+              vocabulary={vocabulary}
               onSentenceSelect={(sentence) => {
                 setCurrentSentence(sentence.id);
                 selectSentence(sentence);

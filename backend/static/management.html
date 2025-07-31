@@ -280,12 +280,14 @@
     <div class="container">
         <header>
             <h1>ZiPop Content Management</h1>
-            <p class="subtitle">Manage content alignment with 11 Labs forced alignment technology</p>
+            <p class="subtitle">Manage content alignment with 11 Labs forced alignment technology and CEDICT translations</p>
         </header>
 
         <div class="controls">
             <button class="btn" onclick="refreshContent()">🔄 Refresh Content</button>
             <button class="btn" onclick="alignAll()">⚡ Align All (with Audio)</button>
+            <button class="btn btn-success" onclick="updateTranslations()">📚 Update CEDICT Translations</button>
+            <button class="btn" onclick="testCedict()">🧪 Test CEDICT</button>
             <span id="last-updated"></span>
         </div>
 
@@ -301,6 +303,10 @@
             <div class="stat-card">
                 <span class="stat-number" id="aligned-content">-</span>
                 <span class="stat-label">Aligned</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="cedict-entries">-</span>
+                <span class="stat-label">CEDICT Entries</span>
             </div>
         </div>
 
@@ -619,6 +625,142 @@
             }
         }
 
+        async function updateTranslations() {
+            if (isProcessing) return;
+            
+            const confirmed = confirm(`This will update ALL content vocabulary with CEDICT translations. This may take a few minutes and will override existing translations. Continue?`);
+            if (!confirmed) return;
+            
+            isProcessing = true;
+            
+            try {
+                showMessage('🔄 Loading CEDICT dictionary and updating translations...', 'info');
+                
+                const response = await fetchWithErrorHandling('/api/v1/translations/update', {
+                    method: 'POST'
+                });
+                
+                if (response.success) {
+                    const { data } = response;
+                    showMessage(`✅ Translation update completed! Updated ${data.totalUpdated} content items with ${data.totalEnhanced} enhanced vocabulary items.`, 'success');
+                    showTranslationResults(data);
+                    await loadContent(); // Refresh to show updated status
+                    await loadCedictStats(); // Update CEDICT stats
+                } else {
+                    showMessage(`❌ Translation update failed: ${response.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showMessage(`❌ Translation update failed: ${error.message}`, 'error');
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        async function testCedict() {
+            try {
+                showMessage('🧪 Testing CEDICT service...', 'info');
+                
+                const response = await fetchWithErrorHandling('/api/v1/translations/test', {
+                    method: 'POST'
+                });
+                
+                if (response.success) {
+                    showCedictTestResults(response.data);
+                } else {
+                    showMessage(`❌ CEDICT test failed: ${response.message}`, 'error');
+                }
+                
+            } catch (error) {
+                showMessage(`❌ CEDICT test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadCedictStats() {
+            try {
+                const response = await fetchWithErrorHandling('/api/v1/translations/stats');
+                
+                if (response.success) {
+                    document.getElementById('cedict-entries').textContent = response.data.totalEntries.toLocaleString();
+                } else {
+                    document.getElementById('cedict-entries').textContent = 'Error';
+                }
+                
+            } catch (error) {
+                document.getElementById('cedict-entries').textContent = 'Error';
+                console.error('Failed to load CEDICT stats:', error);
+            }
+        }
+
+        function showTranslationResults(data) {
+            const modalBody = document.getElementById('modal-body');
+            const successfulResults = data.results.filter(r => r.success);
+            const failedResults = data.results.filter(r => !r.success);
+            
+            modalBody.innerHTML = `
+                <h2>📚 Translation Update Results</h2>
+                <div style="margin: 20px 0;">
+                    <p><strong>Total Processed:</strong> ${data.totalProcessed}</p>
+                    <p><strong>Successfully Updated:</strong> ${data.totalUpdated}</p>
+                    <p><strong>Total Vocabulary Enhanced:</strong> ${data.totalEnhanced}</p>
+                    <p><strong>CEDICT Dictionary:</strong> ${data.dictionaryStats.totalEntries.toLocaleString()} entries loaded</p>
+                </div>
+                
+                ${successfulResults.length > 0 ? `
+                    <h3>✅ Successfully Updated Content</h3>
+                    <div style="max-height: 200px; overflow-y: auto; margin: 10px 0;">
+                        ${successfulResults.map(result => `
+                            <div style="margin: 8px 0; padding: 8px; background: #e8f5e8; border-radius: 4px; font-size: 12px;">
+                                <strong>${result.title}</strong> (${result.contentId})<br>
+                                Original: ${result.originalCount} → Expanded: ${result.expandedCount || result.originalCount} items<br>
+                                ${result.charactersAdded ? `Characters: ${result.charactersAdded}, Words: ${result.wordsAdded}<br>` : ''}
+                                Enhanced: ${result.enhancedCount}, New: ${result.newItemsCount || 0}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                ${failedResults.length > 0 ? `
+                    <h3>❌ Failed Updates</h3>
+                    <div style="max-height: 150px; overflow-y: auto; margin: 10px 0;">
+                        ${failedResults.map(result => `
+                            <div style="margin: 8px 0; padding: 8px; background: #ffebee; border-radius: 4px; font-size: 12px;">
+                                <strong>${result.title}</strong> (${result.contentId})<br>
+                                Error: ${result.error}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+            document.getElementById('result-modal').classList.add('show');
+        }
+
+        function showCedictTestResults(data) {
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <h2>🧪 CEDICT Test Results</h2>
+                <div style="margin: 20px 0;">
+                    <p><strong>Dictionary Loaded:</strong> ${data.dictionaryStats.loaded ? '✅ Yes' : '❌ No'}</p>
+                    <p><strong>Total Entries:</strong> ${data.dictionaryStats.totalEntries.toLocaleString()}</p>
+                    <p><strong>Test Results:</strong> ${data.summary.found}/${data.summary.totalTested} words found</p>
+                </div>
+                
+                <h3>Test Words</h3>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${data.testResults.map(result => `
+                        <div style="margin: 8px 0; padding: 8px; background: ${result.found ? '#e8f5e8' : '#fff3cd'}; border-radius: 4px; font-size: 12px;">
+                            <strong>Chinese:</strong> ${result.chinese}<br>
+                            <strong>Translation:</strong> ${result.translation || 'Not found'}<br>
+                            <strong>Pinyin:</strong> ${result.pinyin || 'Not available'}<br>
+                            <strong>Status:</strong> ${result.found ? '✅ Found' : '❌ Not found'}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('result-modal').classList.add('show');
+        }
+
         function refreshContent() {
             loadContent();
         }
@@ -626,6 +768,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadContent();
+            loadCedictStats();
         });
 
         // Close modal when clicking outside
