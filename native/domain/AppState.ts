@@ -204,35 +204,28 @@ export class AppState {
       return;
     }
 
-    // Find the sentence that should be playing at the current time
+    // Find the sentence that should be playing at the current time using timing data
     // Add a small buffer (0.1 seconds) to prevent rapid switching
-    const playingSentence = this.currentLessonData.content.sentences.find((sentence: any) => {
+    let playingSentenceIndex = -1;
+    const playingSentence = this.currentLessonData.content.sentences.find((sentence: any, index: number) => {
       if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
         const isInRange = currentTime >= (sentence.timing.start - 0.1) && currentTime <= (sentence.timing.end + 0.1);
         if (isInRange) {
-          console.log(`Found playing sentence at time ${currentTime}:`, sentence.chinese);
+          console.log(`Found playing sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
+          playingSentenceIndex = index;
         }
         return isInRange;
       }
       return false;
     });
 
-    if (playingSentence) {
-      // Find the corresponding sentence in our wordList
-      const sentenceChinese = playingSentence.chinese;
-      console.log(`Looking for sentence in wordList: "${sentenceChinese}"`);
-      
-      // Remove punctuation from both sides for comparison
-      const normalizedSentenceChinese = sentenceChinese.replace(/[。！？；，]/g, '');
-      
-      const matchingSentence = this.wordList.sentences.find(sentence => {
-        const wordListSentence = sentence.words.map(word => word.hanzi).join('');
-        const normalizedWordListSentence = wordListSentence.replace(/[。！？；，]/g, '');
-        return normalizedWordListSentence === normalizedSentenceChinese;
-      });
+    if (playingSentence && playingSentenceIndex >= 0) {
+      // Use index-based matching instead of text-based matching
+      // This assumes the lesson data sentences and wordList sentences are in the same order
+      const matchingSentence = this.wordList.sentences[playingSentenceIndex];
 
       if (matchingSentence) {
-        console.log(`Found matching sentence with ID: ${matchingSentence.id}, current ID: ${this.sentenceState.currentSentenceId}`);
+        console.log(`Using index-based matching: found sentence at index ${playingSentenceIndex} with ID: ${matchingSentence.id}, current ID: ${this.sentenceState.currentSentenceId}`);
         
         if (this.sentenceState.currentSentenceId !== matchingSentence.id) {
           console.log(`Updating current sentence ID to: ${matchingSentence.id}`);
@@ -253,12 +246,7 @@ export class AppState {
           this.notifyListeners();
         }
       } else {
-        console.log(`No matching sentence found for: "${sentenceChinese}" (normalized: "${normalizedSentenceChinese}")`);
-        console.log('Available sentences (normalized):', this.wordList.sentences.map(s => {
-          const original = s.words.map(word => word.hanzi).join('');
-          const normalized = original.replace(/[。！？；，]/g, '');
-          return `"${original}" → "${normalized}"`;
-        }));
+        console.log(`No sentence found at index ${playingSentenceIndex} in wordList (total: ${this.wordList.sentences.length})`);
       }
     } else {
       // If no sentence is playing, keep the current selection but update current sentence to null
@@ -463,18 +451,20 @@ export class AppState {
    * Play audio for a specific sentence
    */
   playSentenceAudio(sentence: Sentence): void {
-    // Find the timing data for this sentence from the lesson data
-    const lessonData = getLessonById('beginner-greetings'); // TODO: Make this dynamic based on current lesson
+    if (!this.currentLessonData?.content?.sentences) {
+      console.warn('No lesson data available for sentence playback');
+      return;
+    }
     
-    if (lessonData?.content?.sentences) {
-      // Get the Chinese text by concatenating hanzi from all words
-      const sentenceChinese = sentence.words.map(word => word.hanzi).join('');
-      
-      const sentenceData = lessonData.content.sentences.find(
-        s => s.chinese === sentenceChinese
-      );
+    // Find the sentence index in wordList to get corresponding timing data
+    const sentenceIndex = this.wordList.sentences.findIndex(s => s.id === sentence.id);
+    
+    if (sentenceIndex >= 0 && sentenceIndex < this.currentLessonData.content.sentences.length) {
+      const sentenceData = this.currentLessonData.content.sentences[sentenceIndex];
       
       if (sentenceData?.timing && sentenceData.timing.duration > 0) {
+        console.log(`Playing sentence at index ${sentenceIndex} with timing:`, sentenceData.timing);
+        
         audioManager.playSentence({
           start: sentenceData.timing.start,
           end: sentenceData.timing.end,
@@ -487,8 +477,10 @@ export class AppState {
         };
         this.notifyListeners();
       } else {
-        console.warn('No timing data found for sentence:', sentenceChinese);
+        console.warn('No timing data found for sentence at index:', sentenceIndex);
       }
+    } else {
+      console.warn('Sentence index not found or out of range:', sentenceIndex);
     }
   }
 
