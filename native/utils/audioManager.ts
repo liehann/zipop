@@ -186,6 +186,29 @@ class AudioManager {
   }
 
   /**
+   * Seek to a specific time position
+   */
+  seekTo(time: number): void {
+    try {
+      // Clamp time to valid range
+      const seekTime = Math.max(0, Math.min(time, this.duration));
+      
+      if (Platform.OS === 'web' && this.webAudio) {
+        this.webAudio.currentTime = seekTime;
+        this.currentTime = seekTime;
+        this.config.onTimeUpdate?.(this.currentTime);
+      } else if (Platform.OS !== 'web' && this.rnSound) {
+        this.rnSound.setCurrentTime(seekTime);
+        this.currentTime = seekTime;
+        this.config.onTimeUpdate?.(this.currentTime);
+      }
+    } catch (error) {
+      console.error('Audio seek error:', error);
+      this.config.onError?.(`Audio seek error: ${error}`);
+    }
+  }
+
+  /**
    * Play a specific sentence based on timing
    */
   playSentence(timing: SentenceTiming): void {

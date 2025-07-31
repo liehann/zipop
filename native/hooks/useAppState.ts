@@ -51,6 +51,11 @@ export const useAppState = () => {
     toggleAudioPlayback: appState.toggleAudioPlayback.bind(appState),
     playSentenceAudio: appState.playSentenceAudio.bind(appState),
     stopAudioPlayback: appState.stopAudioPlayback.bind(appState),
+    seekAudio: appState.seekAudio.bind(appState),
+    goToPreviousSentence: appState.goToPreviousSentence.bind(appState),
+    goToNextSentence: appState.goToNextSentence.bind(appState),
+    repeatCurrentSentence: appState.repeatCurrentSentence.bind(appState),
+    restartAudio: appState.restartAudio.bind(appState),
     updateAudioTime: appState.updateAudioTime.bind(appState),
     formatTime: appState.formatTime.bind(appState),
   };

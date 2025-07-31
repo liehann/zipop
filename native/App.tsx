@@ -24,6 +24,7 @@ import TranslationView from './components/TranslationView';
 import AddTextView from './components/AddTextView';
 import ChooseTextView from './components/ChooseTextView';
 import Sidebar from './components/Sidebar';
+import AudioPlayerControls from './components/AudioPlayerControls';
 import { SavedDocument } from './types';
 
 function App(): React.JSX.Element {
@@ -49,6 +50,10 @@ function App(): React.JSX.Element {
     saveCurrentDocument,
     formatTime,
     toggleAudioPlayback,
+    seekAudio,
+    goToPreviousSentence,
+    goToNextSentence,
+    repeatCurrentSentence,
   } = useAppState();
 
   // Set initial current sentence for demonstration
@@ -144,27 +149,7 @@ function App(): React.JSX.Element {
                 ]}>
                   {wordList.title}
                 </Text>
-                <Text style={[
-                  styles.audioStatus,
-                  { color: isDarkMode ? '#999999' : '#666666' }
-                ]}>
-                  {formatTime(audioState.currentTime)} / {formatTime(audioState.duration)}
-                </Text>
               </View>
-              
-              {/* Play/Pause Button */}
-              <TouchableOpacity
-                style={[
-                  styles.headerPlayButton,
-                  { backgroundColor: isDarkMode ? '#007AFF' : '#007AFF' }
-                ]}
-                onPress={toggleAudioPlayback}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.headerPlayButtonText}>
-                  {audioState.isPlaying ? '⏸' : '▶️'}
-                </Text>
-              </TouchableOpacity>
             </View>
 
             {/* SCROLLABLE CONTENT */}
@@ -183,6 +168,19 @@ function App(): React.JSX.Element {
                 onSentencePress={selectSentence}
               />
             </ScrollView>
+
+            {/* AUDIO PLAYER CONTROLS */}
+            <AudioPlayerControls
+              isPlaying={audioState.isPlaying}
+              currentTime={audioState.currentTime}
+              duration={audioState.duration}
+              onPlayPause={toggleAudioPlayback}
+              onSeek={seekAudio}
+              onPrevious={goToPreviousSentence}
+              onNext={goToNextSentence}
+              onRepeat={repeatCurrentSentence}
+              formatTime={formatTime}
+            />
 
             {/* FOOTER */}
             <TranslationView 
@@ -241,10 +239,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 2,
   },
-  audioStatus: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
+
   hamburgerButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -254,22 +249,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  headerPlayButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  headerPlayButtonText: {
-    fontSize: 16,
-    color: '#ffffff',
-  },
+
   menuButton: {
     paddingVertical: 8,
     paddingHorizontal: 12,

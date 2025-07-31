@@ -472,7 +472,13 @@ export class AppState {
     if (audioState.isPlaying) {
       audioManager.pause();
     } else {
-      audioManager.play(this.audioState.currentTime);
+      // If audio has reached the end, restart from beginning
+      if (this.audioState.currentTime >= this.audioState.duration && this.audioState.duration > 0) {
+        this.restartAudio();
+        return;
+      } else {
+        audioManager.play(this.audioState.currentTime);
+      }
     }
     
     this.audioState = {
@@ -519,17 +525,138 @@ export class AppState {
     }
   }
 
-  /**
+    /**
    * Stop audio playback
    */
   stopAudioPlayback(): void {
     audioManager.stop();
     this.audioState = {
-      ...this.audioState,
+      ...this.audioState, 
       isPlaying: false,
       currentTime: 0,
     };
     this.notifyListeners();
+  }
+
+  /**
+   * Seek audio to specific time position
+   */
+  seekAudio(time: number): void {
+    audioManager.seekTo(time);
+    this.audioState = {
+      ...this.audioState,
+      currentTime: time,
+    };
+    this.notifyListeners();
+  }
+
+  /**
+   * Navigate to previous sentence
+   */
+  goToPreviousSentence(): void {
+    if (!this.currentLessonData?.content?.sentences || this.wordList.sentences.length === 0) {
+      return;
+    }
+
+    const currentIndex = this.getCurrentSentenceIndex();
+    const previousIndex = Math.max(0, currentIndex - 1);
+    
+    if (previousIndex !== currentIndex) {
+      this.navigateToSentenceByIndex(previousIndex);
+    }
+  }
+
+  /**
+   * Navigate to next sentence
+   */
+  goToNextSentence(): void {
+    if (!this.currentLessonData?.content?.sentences || this.wordList.sentences.length === 0) {
+      return;
+    }
+
+    const currentIndex = this.getCurrentSentenceIndex();
+    const nextIndex = Math.min(this.wordList.sentences.length - 1, currentIndex + 1);
+    
+    if (nextIndex !== currentIndex) {
+      this.navigateToSentenceByIndex(nextIndex);
+    }
+  }
+
+  /**
+   * Get current sentence index
+   */
+  private getCurrentSentenceIndex(): number {
+    if (!this.sentenceState.currentSentenceId) {
+      return 0;
+    }
+    
+    const index = this.wordList.sentences.findIndex(
+      sentence => sentence.id === this.sentenceState.currentSentenceId
+    );
+    return Math.max(0, index);
+  }
+
+  /**
+   * Navigate to sentence by index and start playing from that position
+   */
+  private navigateToSentenceByIndex(index: number): void {
+    if (index < 0 || index >= this.wordList.sentences.length) {
+      return;
+    }
+
+    const sentence = this.wordList.sentences[index];
+    const sentenceData = this.currentLessonData?.content?.sentences?.[index];
+    
+    // Update current sentence
+    this.sentenceState = {
+      ...this.sentenceState,
+      currentSentenceId: sentence.id,
+    };
+
+    // If we have timing data, seek to the sentence start time
+    if (sentenceData?.timing?.start !== undefined) {
+      this.seekAudio(sentenceData.timing.start);
+    }
+
+    this.notifyListeners();
+  }
+
+  /**
+   * Handle audio end - restart from beginning when play is pressed
+   */
+  restartAudio(): void {
+    this.seekAudio(0);
+    audioManager.play(0);
+    this.audioState = {
+      ...this.audioState,
+      isPlaying: true,
+      currentTime: 0,
+    };
+    this.notifyListeners();
+  }
+
+  /**
+   * Repeat the current sentence
+   */
+  repeatCurrentSentence(): void {
+    if (!this.currentLessonData?.content?.sentences || this.wordList.sentences.length === 0) {
+      return;
+    }
+
+    const currentIndex = this.getCurrentSentenceIndex();
+    const sentenceData = this.currentLessonData?.content?.sentences?.[currentIndex];
+    
+    if (sentenceData?.timing?.start !== undefined) {
+      // Seek to sentence start and play
+      this.seekAudio(sentenceData.timing.start);
+      audioManager.play(sentenceData.timing.start);
+      this.audioState = {
+        ...this.audioState,
+        isPlaying: true,
+        currentTime: sentenceData.timing.start,
+      };
+      this.notifyListeners();
+    }
   }
 
   updateAudioTime(currentTime: number): void {
