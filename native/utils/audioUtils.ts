@@ -1,55 +1,42 @@
 /**
  * Audio utilities for loading and managing audio files across platforms
+ * Updated to use backend API for audio streaming
  */
 
 import { Platform } from 'react-native';
 import { AudioConfig } from '../data/types';
+import contentService from '../services/contentService';
 
 /**
- * Get the platform-specific audio file path
- * @param filename - The audio filename (e.g., 'beginner-greetings.mp3')
- * @returns Platform-specific path to the audio file
+ * Get the backend audio URL for content
+ * @param contentId - The content ID
+ * @returns Backend audio streaming URL
  */
-export const getAudioPath = (filename: string): string => {
-  if (Platform.OS === 'web') {
-    // For web, audio files are served from public directory
-    return `/${filename}`;
-  } else {
-    // For mobile (iOS/Android), audio files are in the assets/audio directory
-    return `assets/audio/${filename}`;
-  }
+export const getAudioPath = (contentId: string): string => {
+  return contentService.getAudioUrl(contentId);
 };
 
 /**
- * Get the audio source object for React Native
- * @param filename - The audio filename
+ * Get the audio source object for React Native from backend
+ * @param contentId - The content ID
  * @returns Audio source object
  */
-export const getAudioSource = (filename: string) => {
-  if (Platform.OS === 'web') {
-    return { uri: getAudioPath(filename) };
-  } else {
-    // For mobile platforms, we can require the file directly
-    // This assumes the file is in the assets/audio directory
-    const audioFiles: { [key: string]: any } = {
-      'beginner-greetings.mp3': require('../assets/audio/beginner-greetings.mp3'),
-    };
-    
-    return audioFiles[filename] || { uri: getAudioPath(filename) };
-  }
+export const getAudioSource = (contentId: string) => {
+  return { uri: getAudioPath(contentId) };
 };
 
 /**
- * Load audio configuration from lesson data
- * @param audioConfig - Audio configuration from lesson
+ * Load audio configuration from content data
+ * @param audioConfig - Audio configuration from content
+ * @param contentId - The content ID for backend audio streaming
  * @returns Promise resolving to audio source information
  */
-export const loadAudioFromConfig = async (audioConfig: AudioConfig) => {
+export const loadAudioFromConfig = async (audioConfig: AudioConfig, contentId: string) => {
   if (!audioConfig.enabled || !audioConfig.file) {
     return null;
   }
 
-  const audioSource = getAudioSource(audioConfig.file);
+  const audioSource = getAudioSource(contentId);
   
   return {
     source: audioSource,
@@ -59,23 +46,16 @@ export const loadAudioFromConfig = async (audioConfig: AudioConfig) => {
 };
 
 /**
- * Validate that an audio file exists and is accessible
- * @param filename - The audio filename to validate
- * @returns Promise resolving to boolean indicating if file is accessible
+ * Validate that an audio file exists and is accessible on backend
+ * @param contentId - The content ID to validate
+ * @returns Promise resolving to boolean indicating if audio is accessible
  */
-export const validateAudioFile = async (filename: string): Promise<boolean> => {
+export const validateAudioFile = async (contentId: string): Promise<boolean> => {
   try {
-    if (Platform.OS === 'web') {
-      // For web, we can try to fetch the file
-      const response = await fetch(getAudioPath(filename), { method: 'HEAD' });
-      return response.ok;
-    } else {
-      // For mobile, we assume the bundled file exists if it's in our audioFiles map
-      const audioFiles = ['beginner-greetings.mp3'];
-      return audioFiles.includes(filename);
-    }
+    const audioInfo = await contentService.getAudioInfo(contentId);
+    return audioInfo !== null;
   } catch (error) {
-    console.warn(`Audio file validation failed for ${filename}:`, error);
+    console.warn(`Audio validation failed for content ${contentId}:`, error);
     return false;
   }
 }; 

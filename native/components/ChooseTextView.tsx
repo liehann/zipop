@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SavedDocument } from '../types';
 import { getSavedDocuments, deleteDocument } from '../utils/storage';
-import { getBuiltInLessons, lessonToWordListData } from '../data/dataLoader';
+import contentService from '../services/contentService';
 import { BuiltInLesson } from '../data/types';
 
 interface ChooseTextViewProps {
@@ -37,11 +37,12 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
       const savedDocs = await getSavedDocuments();
       setDocuments(savedDocs);
       
-      // Load built-in lessons
-      const lessons = getBuiltInLessons();
+      // Load content from backend
+      const lessons = await contentService.getBuiltInLessons();
       setBuiltInLessons(lessons);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load documents.');
+      console.error('Failed to load documents:', error);
+      Alert.alert('Error', 'Failed to load content. Make sure the backend is running.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -80,8 +81,8 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
   };
 
   const handleSelectBuiltInLesson = (lesson: BuiltInLesson) => {
-    // Convert the lesson to a SavedDocument format for the app
-    const wordListData = lessonToWordListData(lesson.lessonData);
+    // Convert the content to a SavedDocument format for the app
+    const wordListData = contentService.contentToWordListData(lesson.lessonData);
     const document: SavedDocument = {
       id: lesson.id,
       title: lesson.title,

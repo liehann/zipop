@@ -1,5 +1,5 @@
 import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence, AppViewState, SavedDocument } from '../types';
-import { getLessonById, lessonToWordListData } from '../data/dataLoader';
+import contentService from '../services/contentService';
 import { saveDocument, setCurrentDocument } from '../utils/storage';
 import { audioManager, AudioManagerConfig } from '../utils/audioManager';
 import { loadAudioFromConfig } from '../utils/audioUtils';
@@ -15,23 +15,17 @@ export class AppState {
   private currentLessonData: any = null; // Store current lesson data for timing lookups
 
   constructor() {
-    // Load beginner-greetings lesson as default
-    const beginnerGreetingsLesson = getLessonById('beginner-greetings');
-    if (beginnerGreetingsLesson) {
-      this.wordList = lessonToWordListData(beginnerGreetingsLesson);
-      this.currentLessonAudio = beginnerGreetingsLesson.audio;
-      this.currentLessonData = beginnerGreetingsLesson; // Store the full lesson data
-      this.initializeAudio();
-    } else {
-      // Fallback to empty data if lesson not found
-      this.wordList = {
-        id: 'empty',
-        title: 'No Content',
-        sentences: [],
-        dateCreated: new Date().toISOString(),
-        dateModified: new Date().toISOString()
-      };
-    }
+    // Initialize with empty data - will load default content asynchronously
+    this.wordList = {
+      id: 'loading',
+      title: 'Loading...',
+      sentences: [],
+      dateCreated: new Date().toISOString(),
+      dateModified: new Date().toISOString()
+    };
+    
+    // Load default content asynchronously
+    this.loadDefaultContent();
     
     this.audioState = {
       isPlaying: false,
@@ -51,6 +45,51 @@ export class AppState {
 
     // Configure audio manager callbacks
     this.setupAudioManager();
+  }
+
+  private async loadDefaultContent(): Promise<void> {
+    try {
+      // Try to load beginner-greetings content as default
+      const beginnerGreetingsContent = await contentService.getContentById('beginner-greetings');
+      if (beginnerGreetingsContent) {
+        this.wordList = contentService.contentToWordListData(beginnerGreetingsContent);
+        this.currentLessonAudio = beginnerGreetingsContent.audio;
+        this.currentLessonData = beginnerGreetingsContent;
+        this.initializeAudio();
+        this.notifyListeners();
+      } else {
+        // Try to load any featured content
+        const featuredContent = await contentService.getFeaturedContent();
+        if (featuredContent.length > 0) {
+          const firstContent = featuredContent[0];
+          this.wordList = contentService.contentToWordListData(firstContent);
+          this.currentLessonAudio = firstContent.audio;
+          this.currentLessonData = firstContent;
+          this.initializeAudio();
+          this.notifyListeners();
+        } else {
+          // Fallback to empty content
+          this.wordList = {
+            id: 'empty',
+            title: 'No Content Available',
+            sentences: [],
+            dateCreated: new Date().toISOString(),
+            dateModified: new Date().toISOString()
+          };
+          this.notifyListeners();
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load default content:', error);
+      this.wordList = {
+        id: 'error',
+        title: 'Connection Error',
+        sentences: [],
+        dateCreated: new Date().toISOString(),
+        dateModified: new Date().toISOString()
+      };
+      this.notifyListeners();
+    }
   }
 
   private setupAudioManager(): void {
@@ -159,9 +198,11 @@ export class AppState {
   }
 
   private async initializeAudio(): Promise<void> {
-    if (this.currentLessonAudio?.enabled && this.currentLessonAudio?.file) {
+    if (this.currentLessonAudio?.enabled && this.currentLessonData?.id) {
       try {
-        const audioLoaded = await audioManager.loadAudio(this.currentLessonAudio.file);
+        // Load audio using content ID instead of filename
+        const audioSource = contentService.getAudioUrl(this.currentLessonData.id);
+        const audioLoaded = await audioManager.loadAudio(audioSource);
         if (audioLoaded) {
           const audioState = audioManager.getState();
           this.audioState = {
