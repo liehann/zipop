@@ -90,6 +90,9 @@ const ChooseTextView: React.FC<ChooseTextViewProps> = ({
       wordListData,
       dateCreated: lesson.lessonData.metadata.dateCreated,
       dateModified: lesson.lessonData.metadata.dateModified,
+      // Preserve audio configuration and lesson data for audio loading
+      audio: lesson.lessonData.audio,
+      lessonData: lesson.lessonData,
     };
     
     onSelectDocument(document);

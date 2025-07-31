@@ -27,10 +27,10 @@ app.register(cors, {
 
 app.register(multipart);
 
-// Serve audio files statically
+// Serve static files (audio, images, etc.)
 app.register(staticFiles, {
-  root: path.join(__dirname, '../audio'),
-  prefix: '/audio/',
+  root: path.join(__dirname, '../static'),
+  prefix: '/static/',
 });
 
 // Add Prisma to Fastify instance
@@ -68,6 +68,7 @@ app.get('/', async (request, reply) => {
       audio: '/api/v1/audio',
       categories: '/api/v1/categories',
       levels: '/api/v1/levels',
+      static: '/static/',
       health: '/health'
     }
   };

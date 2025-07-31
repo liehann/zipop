@@ -198,18 +198,20 @@ export class AppState {
   }
 
   private async initializeAudio(): Promise<void> {
-    if (this.currentLessonAudio?.enabled && this.currentLessonData?.id) {
+    if (this.currentLessonAudio?.enabled && this.currentLessonAudio?.file) {
       try {
-        // Load audio using content ID instead of filename
-        const audioSource = contentService.getAudioUrl(this.currentLessonData.id);
-        const audioLoaded = await audioManager.loadAudio(audioSource);
-        if (audioLoaded) {
-          const audioState = audioManager.getState();
-          this.audioState = {
-            ...this.audioState,
-            duration: audioState.duration,
-          };
-          this.notifyListeners();
+        // Load audio using static file configuration
+        const audioConfig = await loadAudioFromConfig(this.currentLessonAudio);
+        if (audioConfig) {
+          const audioLoaded = await audioManager.loadAudio(audioConfig.source.uri);
+          if (audioLoaded) {
+            const audioState = audioManager.getState();
+            this.audioState = {
+              ...this.audioState,
+              duration: audioState.duration,
+            };
+            this.notifyListeners();
+          }
         }
       } catch (error) {
         console.error('Failed to initialize audio:', error);
@@ -314,7 +316,23 @@ export class AppState {
   // Document management
   async loadDocument(document: SavedDocument): Promise<void> {
     try {
+      console.log('🎵 Loading document:', document.title, 'with audio:', !!document.audio);
+      
       this.wordList = document.wordListData;
+      
+      // Set audio configuration if available (for built-in lessons)
+      if (document.audio && document.lessonData) {
+        console.log('🎵 Setting up audio for document:', document.title);
+        this.currentLessonAudio = document.audio;
+        this.currentLessonData = document.lessonData;
+        // Initialize audio for the new content
+        await this.initializeAudio();
+      } else {
+        console.log('🎵 No audio config for document:', document.title);
+        // Clear audio if no audio configuration
+        this.currentLessonAudio = null;
+        this.currentLessonData = null;
+      }
       
       // Set current document in storage
       await setCurrentDocument(document.id);

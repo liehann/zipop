@@ -242,25 +242,7 @@ class ContentService {
     };
   }
 
-  /**
-   * Get audio URL for content
-   */
-  getAudioUrl(contentId: string): string {
-    return apiService.getAudioUrl(contentId);
-  }
 
-  /**
-   * Get audio info for content
-   */
-  async getAudioInfo(contentId: string): Promise<any> {
-    try {
-      const response = await apiService.getAudioInfo(contentId);
-      return response.data;
-    } catch (error) {
-      console.error(`Failed to fetch audio info for ${contentId}:`, error);
-      return null;
-    }
-  }
 
   /**
    * Clear caches (useful for development or when data changes)

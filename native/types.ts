@@ -54,4 +54,7 @@ export interface SavedDocument {
   wordListData: WordListData;
   dateCreated: string;
   dateModified: string;
+  // Optional fields for built-in lessons with audio
+  audio?: any; // Audio configuration from lesson data
+  lessonData?: any; // Complete lesson data for audio timing lookups
 } 

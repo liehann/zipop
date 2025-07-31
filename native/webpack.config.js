@@ -32,13 +32,6 @@ module.exports = {
         test: /\.(png|jpe?g|gif|svg)$/,
         type: 'asset/resource',
       },
-      {
-        test: /\.(mp3|wav|aac|m4a)$/,
-        type: 'asset/resource',
-        generator: {
-          filename: 'audio/[name][ext]',
-        },
-      },
     ],
   },
   plugins: [

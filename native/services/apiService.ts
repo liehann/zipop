@@ -4,11 +4,7 @@
  */
 
 import { LessonData, Category, Level, DataIndex } from '../data/types';
-
-// Backend configuration
-const API_BASE_URL = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:3002/api/v1'  // Development
-  : 'https://your-production-api.com/api/v1';  // Production
+import { apiUrl, staticUrl } from '../config/environment';
 
 // API Response types
 interface ApiResponse<T> {
@@ -39,9 +35,11 @@ interface ContentQuery {
 
 class ApiService {
   private baseUrl: string;
+  private staticBaseUrl: string;
 
   constructor() {
-    this.baseUrl = API_BASE_URL;
+    this.baseUrl = apiUrl;
+    this.staticBaseUrl = staticUrl;
   }
 
   // Generic HTTP request handler
@@ -125,9 +123,14 @@ class ApiService {
     return this.request<ApiResponse<any>>(`/audio/${contentId}/info`);
   }
 
-  // Get audio URL for streaming
+  // Get audio URL for streaming (legacy API endpoint)
   getAudioUrl(contentId: string): string {
     return `${this.baseUrl}/audio/${contentId}`;
+  }
+
+  // Get static audio URL from filename
+  getStaticAudioUrl(filename: string): string {
+    return `${this.staticBaseUrl}/audio/${filename}`;
   }
 
   // Health check

@@ -3,7 +3,6 @@
  */
 
 import { Platform } from 'react-native';
-import { getAudioSource } from './audioUtils';
 
 // Types
 export interface AudioManagerConfig {
@@ -39,17 +38,18 @@ class AudioManager {
   /**
    * Load an audio file
    */
-  async loadAudio(filename: string): Promise<boolean> {
+  async loadAudio(audioUrl: string): Promise<boolean> {
     try {
-      this.filename = filename;
+      console.log('🎵 AudioManager.loadAudio called with:', audioUrl);
+      this.filename = audioUrl; // Store the URL, not just filename
       
       if (Platform.OS === 'web') {
-        return this.loadWebAudio(filename);
+        return this.loadWebAudio(audioUrl);
       } else {
-        return this.loadMobileAudio(filename);
+        return this.loadMobileAudio(audioUrl);
       }
     } catch (error) {
-      console.error('Failed to load audio:', error);
+      console.error('🎵 Failed to load audio:', error);
       this.config.onError?.(`Failed to load audio: ${error}`);
       return false;
     }
@@ -58,7 +58,9 @@ class AudioManager {
   /**
    * Load audio for web platform
    */
-  private async loadWebAudio(filename: string): Promise<boolean> {
+  private async loadWebAudio(audioUrl: string): Promise<boolean> {
+    console.log('🎵 AudioManager loading web audio:', audioUrl);
+    
     return new Promise((resolve) => {
       // Type assertion for web platform DOM Audio API
       const AudioConstructor = (globalThis as any).Audio;
@@ -68,7 +70,8 @@ class AudioManager {
         return;
       }
 
-      this.webAudio = new AudioConstructor(`/${filename}`) as any;
+      // Use the full URL directly (no longer prepend '/')
+      this.webAudio = new AudioConstructor(audioUrl) as any;
       
       this.webAudio!.addEventListener('loadedmetadata', () => {
         this.duration = this.webAudio!.duration;
@@ -86,7 +89,13 @@ class AudioManager {
       });
 
       this.webAudio!.addEventListener('error', (e: any) => {
-        console.error('Web audio error:', e);
+        console.error('🎵 Web audio error:', {
+          event: e,
+          error: this.webAudio?.error,
+          networkState: this.webAudio?.networkState,
+          readyState: this.webAudio?.readyState,
+          src: this.webAudio?.src
+        });
         this.config.onError?.('Web audio playback error');
         resolve(false);
       });
@@ -99,7 +108,9 @@ class AudioManager {
   /**
    * Load audio for mobile platforms
    */
-  private async loadMobileAudio(filename: string): Promise<boolean> {
+  private async loadMobileAudio(audioUrl: string): Promise<boolean> {
+    console.log('🎵 AudioManager loading mobile audio:', audioUrl);
+    
     return new Promise(async (resolve) => {
       try {
         // Only load react-native-sound when actually on mobile platforms
@@ -122,7 +133,8 @@ class AudioManager {
         // Enable playback in silence mode for iOS
         Sound.setCategory('Playback');
 
-        const audioSource = getAudioSource(filename);
+        // Use the audioUrl directly since it's already a full URL
+        const audioSource = { uri: audioUrl };
         
         this.rnSound = new Sound(audioSource, (error: any) => {
           if (error) {
