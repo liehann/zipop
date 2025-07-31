@@ -125,7 +125,7 @@ function App(): React.JSX.Element {
       default:
         return (
           <>
-            {/* FIXED HEADER */}
+            {/* FIXED HEADER WITH AUDIO CONTROLS */}
             <View style={[
               styles.header,
               { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
@@ -142,13 +142,19 @@ function App(): React.JSX.Element {
                 </Text>
               </TouchableOpacity>
               
-              <View style={styles.headerCenter}>
-                <Text style={[
-                  styles.headerTitle,
-                  { color: isDarkMode ? '#ffffff' : '#000000' }
-                ]}>
-                  {wordList.title}
-                </Text>
+              <View style={styles.audioControlsHeader}>
+                <AudioPlayerControls
+                  isPlaying={audioState.isPlaying}
+                  currentTime={audioState.currentTime}
+                  duration={audioState.duration}
+                  onPlayPause={toggleAudioPlayback}
+                  onSeek={seekAudio}
+                  onPrevious={goToPreviousSentence}
+                  onNext={goToNextSentence}
+                  onRepeat={repeatCurrentSentence}
+                  formatTime={formatTime}
+                  isCompact={true}
+                />
               </View>
             </View>
 
@@ -168,19 +174,6 @@ function App(): React.JSX.Element {
                 onSentencePress={selectSentence}
               />
             </ScrollView>
-
-            {/* AUDIO PLAYER CONTROLS */}
-            <AudioPlayerControls
-              isPlaying={audioState.isPlaying}
-              currentTime={audioState.currentTime}
-              duration={audioState.duration}
-              onPlayPause={toggleAudioPlayback}
-              onSeek={seekAudio}
-              onPrevious={goToPreviousSentence}
-              onNext={goToNextSentence}
-              onRepeat={repeatCurrentSentence}
-              formatTime={formatTime}
-            />
 
             {/* FOOTER */}
             <TranslationView 
@@ -230,14 +223,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
-  headerCenter: {
+  audioControlsHeader: {
     flex: 1,
     alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 2,
+    justifyContent: 'center',
   },
 
   hamburgerButton: {

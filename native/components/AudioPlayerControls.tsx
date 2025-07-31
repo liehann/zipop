@@ -18,6 +18,7 @@ interface AudioPlayerControlsProps {
   onNext: () => void;
   onRepeat: () => void;
   formatTime: (time: number) => string;
+  isCompact?: boolean;
 }
 
 const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
@@ -30,13 +31,14 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
   onNext,
   onRepeat,
   formatTime,
+  isCompact = false,
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
   const [isSliding, setIsSliding] = useState(false);
   const [slidingTime, setSlidingTime] = useState(0);
   const [knobPosition, setKnobPosition] = useState(0);
   
-  const sliderWidth = 220; // Smaller width for compact design
+  const sliderWidth = isCompact ? 180 : 220; // Even smaller for header
   const sliderRef = useRef<View>(null);
   
   // Update knob position when currentTime changes (but not while sliding)
@@ -96,13 +98,38 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
     border: isDarkMode ? '#38383a' : '#c6c6c8',
   };
 
+  const containerStyle = isCompact ? [
+    styles.container,
+    styles.compactContainer,
+    { backgroundColor: 'transparent' }
+  ] : [
+    styles.container, 
+    { backgroundColor: colors.background, borderTopColor: colors.border }
+  ];
+
+  const sliderContainerStyle = isCompact ? [
+    styles.sliderContainer,
+    styles.compactSliderContainer
+  ] : styles.sliderContainer;
+
+  const controlsStyle = isCompact ? [
+    styles.controlsContainer,
+    styles.compactControlsContainer
+  ] : styles.controlsContainer;
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+    <View style={containerStyle}>
       {/* Slider Container */}
-      <View style={styles.sliderContainer}>
+      <View style={sliderContainerStyle}>
         <View 
           ref={sliderRef}
-          style={[styles.sliderTrack, { backgroundColor: colors.sliderTrack }]}
+          style={[
+            styles.sliderTrack, 
+            { 
+              backgroundColor: colors.sliderTrack,
+              width: sliderWidth,
+            }
+          ]}
           {...panResponder.panHandlers}
         >
           {/* Progress bar */}
@@ -132,10 +159,14 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
       {/* Controls and Time Row */}
       <View style={styles.bottomRow}>
         {/* Control Buttons */}
-        <View style={styles.controlsContainer}>
+        <View style={controlsStyle}>
           {/* Previous Button */}
           <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.buttonBg, borderColor: colors.border }]}
+            style={[
+              styles.controlButton, 
+              isCompact && styles.compactControlButton,
+              { backgroundColor: colors.buttonBg, borderColor: colors.border }
+            ]}
             onPress={onPrevious}
             activeOpacity={0.6}
           >
@@ -144,7 +175,11 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
 
           {/* Repeat Button */}
           <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.buttonBg, borderColor: colors.border }]}
+            style={[
+              styles.controlButton, 
+              isCompact && styles.compactControlButton,
+              { backgroundColor: colors.buttonBg, borderColor: colors.border }
+            ]}
             onPress={onRepeat}
             activeOpacity={0.6}
           >
@@ -153,7 +188,11 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
 
           {/* Play/Pause Button */}
           <TouchableOpacity
-            style={[styles.playButton, { backgroundColor: colors.accent }]}
+            style={[
+              styles.playButton, 
+              isCompact && styles.compactPlayButton,
+              { backgroundColor: colors.accent }
+            ]}
             onPress={onPlayPause}
             activeOpacity={0.6}
           >
@@ -169,7 +208,11 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
 
           {/* Next Button */}
           <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: colors.buttonBg, borderColor: colors.border }]}
+            style={[
+              styles.controlButton, 
+              isCompact && styles.compactControlButton,
+              { backgroundColor: colors.buttonBg, borderColor: colors.border }
+            ]}
             onPress={onNext}
             activeOpacity={0.6}
           >
@@ -178,8 +221,12 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
         </View>
 
         {/* Time Display */}
-        <View style={styles.timeContainer}>
-          <Text style={[styles.timeText, { color: colors.textSecondary }]}>
+        <View style={[styles.timeContainer, isCompact && styles.compactTimeContainer]}>
+          <Text style={[
+            styles.timeText, 
+            isCompact && styles.compactTimeText,
+            { color: colors.textSecondary }
+          ]}>
             {formatTime(displayTime)} / {formatTime(duration)}
           </Text>
         </View>
@@ -194,17 +241,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderTopWidth: 0.5,
   },
+  compactContainer: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderTopWidth: 0,
+  },
   sliderContainer: {
     height: 24,
     justifyContent: 'center',
     marginBottom: 12,
     paddingHorizontal: 4,
   },
+  compactSliderContainer: {
+    height: 20,
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
   sliderTrack: {
     height: 3,
     borderRadius: 1.5,
     position: 'relative',
-    width: 220,
   },
   sliderProgress: {
     height: 3,
@@ -234,6 +290,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  compactControlsContainer: {
+    marginRight: 8,
+  },
   controlButton: {
     width: 36,
     height: 36,
@@ -242,6 +301,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 4,
     borderWidth: 0.5,
+  },
+  compactControlButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    marginHorizontal: 3,
   },
   controlButtonText: {
     fontSize: 14,
@@ -259,13 +324,25 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  compactPlayButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginHorizontal: 6,
+  },
   timeContainer: {
     paddingLeft: 8,
+  },
+  compactTimeContainer: {
+    paddingLeft: 4,
   },
   timeText: {
     fontSize: 12,
     fontWeight: '500',
     fontVariant: ['tabular-nums'],
+  },
+  compactTimeText: {
+    fontSize: 11,
   },
   buttonIcon: {
     position: 'absolute',
