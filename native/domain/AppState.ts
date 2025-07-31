@@ -1,6 +1,6 @@
 import { WordListData, Word, AudioState, TranslationState, SentenceState, Sentence, AppViewState, SavedDocument } from '../types';
 import contentService from '../services/contentService';
-import { saveDocument, setCurrentDocument } from '../utils/storage';
+import { saveDocument, setCurrentDocument, getCurrentDocumentId, getDocument } from '../utils/storage';
 import { audioManager, AudioManagerConfig } from '../utils/audioManager';
 import { loadAudioFromConfig } from '../utils/audioUtils';
 
@@ -49,7 +49,22 @@ export class AppState {
 
   private async loadDefaultContent(): Promise<void> {
     try {
-      // Try to load beginner-greetings content as default
+      // First, try to restore the previously opened document
+      const previousDocumentId = await getCurrentDocumentId();
+      console.log('🔄 Checking for previous document:', previousDocumentId);
+      
+      if (previousDocumentId) {
+        // Try to load the previous document (could be a saved document or backend content)
+        const restoredContent = await this.restorePreviousDocument(previousDocumentId);
+        if (restoredContent) {
+          console.log('✅ Successfully restored previous document:', previousDocumentId);
+          return; // Exit early if restoration was successful
+        } else {
+          console.log('❌ Failed to restore previous document, falling back to default');
+        }
+      }
+
+      // If no previous document or restoration failed, try to load beginner-greetings content as default
       const beginnerGreetingsContent = await contentService.getContentById('beginner-greetings');
       if (beginnerGreetingsContent) {
         this.wordList = contentService.contentToWordListData(beginnerGreetingsContent);
@@ -89,6 +104,67 @@ export class AppState {
         dateModified: new Date().toISOString()
       };
       this.notifyListeners();
+    }
+  }
+
+  /**
+   * Attempt to restore a previously opened document by ID
+   * Tries both saved documents and backend content
+   */
+  private async restorePreviousDocument(documentId: string): Promise<boolean> {
+    try {
+      // First, try to load from saved documents (local storage)
+      const savedDocument = await getDocument(documentId);
+      if (savedDocument) {
+        console.log('📂 Found saved document:', savedDocument.title);
+        this.wordList = savedDocument.wordListData;
+        
+        // Set audio configuration if available (for built-in lessons)
+        if (savedDocument.audio && savedDocument.lessonData) {
+          this.currentLessonAudio = savedDocument.audio;
+          this.currentLessonData = savedDocument.lessonData;
+          await this.initializeAudio();
+        } else {
+          // Clear audio if no audio configuration
+          this.currentLessonAudio = null;
+          this.currentLessonData = null;
+        }
+        
+        // Set first sentence as current if available
+        if (savedDocument.wordListData.sentences.length > 0) {
+          this.setCurrentSentence(savedDocument.wordListData.sentences[0].id);
+        }
+        
+        this.notifyListeners();
+        return true;
+      }
+
+      // If not found in saved documents, try to load from backend content
+      const backendContent = await contentService.getContentById(documentId);
+      if (backendContent) {
+        console.log('🌐 Found backend content:', backendContent.title);
+        this.wordList = contentService.contentToWordListData(backendContent);
+        this.currentLessonAudio = backendContent.audio;
+        this.currentLessonData = backendContent;
+        await this.initializeAudio();
+        
+        // Ensure the current document ID is maintained
+        await setCurrentDocument(documentId);
+        
+        // Set first sentence as current if available
+        if (this.wordList.sentences.length > 0) {
+          this.setCurrentSentence(this.wordList.sentences[0].id);
+        }
+        
+        this.notifyListeners();
+        return true;
+      }
+
+      console.log('📭 Document not found in saved documents or backend content:', documentId);
+      return false;
+    } catch (error) {
+      console.error('Failed to restore previous document:', documentId, error);
+      return false;
     }
   }
 
