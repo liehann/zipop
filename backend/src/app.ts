@@ -8,6 +8,7 @@ import path from 'path';
 import { contentRoutes } from './routes/content';
 import { audioRoutes } from './routes/audio';
 import { metadataRoutes } from './routes/metadata';
+import { alignmentRoutes } from './routes/alignment';
 
 const prisma = new PrismaClient();
 
@@ -46,6 +47,7 @@ declare module 'fastify' {
 app.register(contentRoutes, { prefix: '/api/v1/content' });
 app.register(audioRoutes, { prefix: '/api/v1/audio' });
 app.register(metadataRoutes, { prefix: '/api/v1' });
+app.register(alignmentRoutes, { prefix: '/api/v1/alignment' });
 
 // Health check
 app.get('/health', async (request, reply) => {
@@ -66,6 +68,7 @@ app.get('/', async (request, reply) => {
     endpoints: {
       content: '/api/v1/content',
       audio: '/api/v1/audio',
+      alignment: '/api/v1/alignment',
       categories: '/api/v1/categories',
       levels: '/api/v1/levels',
       static: '/static/',
