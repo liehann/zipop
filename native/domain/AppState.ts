@@ -204,20 +204,59 @@ export class AppState {
       return;
     }
 
-    // Find the sentence that should be playing at the current time using timing data
-    // Add a small buffer (0.1 seconds) to prevent rapid switching
+    // Find the appropriate sentence to highlight based on current time
+    // This prevents flickering during silence gaps between sentences
     let playingSentenceIndex = -1;
-    const playingSentence = this.currentLessonData.content.sentences.find((sentence: any, index: number) => {
+    
+    // First, try to find a sentence that's currently playing (within its timing range)
+    let playingSentence = this.currentLessonData.content.sentences.find((sentence: any, index: number) => {
       if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
-        const isInRange = currentTime >= (sentence.timing.start - 0.1) && currentTime <= (sentence.timing.end + 0.1);
+        const isInRange = currentTime >= sentence.timing.start && currentTime <= sentence.timing.end;
         if (isInRange) {
-          console.log(`Found playing sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
+          console.log(`Found actively playing sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
           playingSentenceIndex = index;
         }
         return isInRange;
       }
       return false;
     });
+
+    // If no sentence is actively playing, find the most appropriate sentence to highlight
+    if (!playingSentence) {
+      for (let index = 0; index < this.currentLessonData.content.sentences.length; index++) {
+        const sentence = this.currentLessonData.content.sentences[index];
+        
+        if (sentence.timing && sentence.timing.start !== undefined && sentence.timing.end !== undefined) {
+          // If we're past this sentence's end time, and there's a next sentence
+          if (currentTime > sentence.timing.end) {
+            const nextIndex = index + 1;
+            if (nextIndex < this.currentLessonData.content.sentences.length) {
+              const nextSentence = this.currentLessonData.content.sentences[nextIndex];
+              // If the next sentence hasn't started yet, or we're before it starts, show the next sentence
+              if (!nextSentence.timing || currentTime < nextSentence.timing.start || !nextSentence.timing.start) {
+                console.log(`Between sentences: jumping to next sentence at time ${currentTime} (index ${nextIndex}):`, nextSentence.chinese);
+                playingSentence = nextSentence;
+                playingSentenceIndex = nextIndex;
+                break;
+              }
+            } else {
+              // This is the last sentence and we're past its end - keep showing it
+              console.log(`Past last sentence end, keeping it highlighted at time ${currentTime} (index ${index}):`, sentence.chinese);
+              playingSentence = sentence;
+              playingSentenceIndex = index;
+              break;
+            }
+          }
+          // If we're before this sentence starts, show it (we're approaching it)
+          else if (currentTime < sentence.timing.start) {
+            console.log(`Before sentence start, showing upcoming sentence at time ${currentTime} (index ${index}):`, sentence.chinese);
+            playingSentence = sentence;
+            playingSentenceIndex = index;
+            break;
+          }
+        }
+      }
+    }
 
     if (playingSentence && playingSentenceIndex >= 0) {
       // Use index-based matching instead of text-based matching
@@ -236,12 +275,8 @@ export class AppState {
             currentSentenceId: matchingSentence.id,
           };
           
-          // Also select this sentence for display in the translation view
-          this.translationState = {
-            ...this.translationState,
-            selectedSentence: matchingSentence,
-            selectedWord: null, // Clear word selection when sentence changes
-          };
+          // Don't automatically select the sentence for translation - this should only happen on manual tap
+          // Keep the existing selectedSentence unless it was explicitly cleared
           
           this.notifyListeners();
         }
