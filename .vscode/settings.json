@@ -1,0 +1,12 @@
+{
+  "java.compile.nullAnalysis.mode": "automatic",
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "driver": "PostgreSQL",
+      "name": "zipop_dev",
+      "connectString": "postgresql://zipop_dev:zipop_dev@localhost:5432/zipop_dev"
+    }
+  ]
+}

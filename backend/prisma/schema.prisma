@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String   @id
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  content     Content[]
+}
+
+model Level {
+  id          String   @id
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  content     Content[]
+}
+
+model Content {
+  id              String   @id
+  title           String
+  description     String
+  tags            Json     // string[]
+  estimatedTime   Int      // in minutes
+  featured        Boolean  @default(false)
+  order           Int      @default(999)
+  
+  // Foreign keys
+  levelId         String
+  categoryId      String
+  
+  // JSON content - keeping your existing structure
+  content         Json     // LessonContent
+  vocabulary      Json     // VocabularyItem[]
+  metadata        Json     // LessonMetadata
+  audio           Json?    // AudioConfig
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  level           Level    @relation(fields: [levelId], references: [id])
+  category        Category @relation(fields: [categoryId], references: [id])
+  
+  @@index([levelId])
+  @@index([categoryId])
+  @@index([featured])
+  @@index([order])
+}
