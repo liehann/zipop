@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "lastUpdated": "2024-01-15T12:00:00Z",
-  "totalLessons": 4,
+  "totalLessons": 5,
   "categories": [
     {
       "id": "greetings",
@@ -22,6 +22,11 @@
       "id": "time",
       "name": "Time & Dates",
       "description": "Time expressions, dates, and scheduling"
+    },
+    {
+      "id": "social",
+      "name": "Social & Friendship",
+      "description": "Social interactions, friendship, and daily activities"
     }
   ],
   "levels": [
@@ -81,6 +86,16 @@
       "estimatedTime": 25,
       "featured": false,
       "order": 4
+    },
+    {
+      "id": "coffee-and-cake",
+      "file": "lessons/coffee_and_cake.json",
+      "title": "Coffee and Cake",
+      "level": "beginner",
+      "category": "social",
+      "estimatedTime": 25,
+      "featured": true,
+      "order": 5
     }
   ]
 } 

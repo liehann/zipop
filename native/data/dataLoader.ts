@@ -15,6 +15,7 @@ import beginnerGreetings from './lessons/beginner-greetings.json';
 import restaurantOrdering from './lessons/restaurant-ordering.json';
 import shoppingBasics from './lessons/shopping-basics.json';
 import timeAndDates from './lessons/time-and-dates.json';
+import coffeeAndCake from './lessons/coffee_and_cake.json';
 
 // Lesson data registry
 const lessonRegistry: Record<string, LessonData> = {
@@ -22,6 +23,7 @@ const lessonRegistry: Record<string, LessonData> = {
   'restaurant-ordering': restaurantOrdering as LessonData,
   'shopping-basics': shoppingBasics as LessonData,
   'time-and-dates': timeAndDates as LessonData,
+  'coffee-and-cake': coffeeAndCake as LessonData,
 };
 
 /**

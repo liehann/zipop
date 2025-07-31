@@ -1,0 +1,437 @@
+{
+  "id": "coffee-and-cake",
+  "title": "Coffee and Cake",
+  "description": "A delightful story about going out for coffee and cake with a friend on Saturday",
+  "level": "beginner",
+  "category": "social",
+  "tags": [
+    "friendship",
+    "food",
+    "weekend",
+    "cafe",
+    "conversation"
+  ],
+  "estimatedTime": 25,
+  "content": {
+    "chinese": "今天是星期六。我没有工作。我想和朋友出去。我打电话给朋友。我说：\"我们去喝咖啡吧！\"她说：\"好啊！下午两点见。\"我刷牙、洗脸。我穿上新衣服。我很开心！我到了朋友家。她说：\"你来了！\"我们一起走路去咖啡店。咖啡店不大，但很好看。有很多人。我们看到很多蛋糕。有巧克力蛋糕、苹果蛋糕，还有奶油蛋糕。有热咖啡、冰咖啡，还有牛奶。我说：\"我要一杯热咖啡，一个巧克力蛋糕。\"她说：\"我要一杯牛奶，一个苹果蛋糕。\"服务员说：\"好的，请等一下。\"我们找了一个桌子坐下。我的咖啡来了。蛋糕也来了。我说：\"这个蛋糕很好吃！\"她说：\"是啊，甜甜的。\"我们一边吃，一边聊天。我们聊学校、工作、和家人。她说：\"我们下次去别的地方吃吧。\"我说：\"好啊！\"吃完了，我们说：\"再见！\"我回家了。今天很开心。",
+    "sentences": [
+      {
+        "chinese": "今天是星期六。",
+        "english": "Today is Saturday.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我没有工作。",
+        "english": "I don't have work.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我想和朋友出去。",
+        "english": "I want to go out with a friend.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我打电话给朋友。",
+        "english": "I call my friend.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我说：\"我们去喝咖啡吧！\"",
+        "english": "I say: \"Let's go have coffee!\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "她说：\"好啊！下午两点见。\"",
+        "english": "She says: \"Great! See you at 2 PM.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我刷牙、洗脸。",
+        "english": "I brush my teeth and wash my face.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我穿上新衣服。",
+        "english": "I put on new clothes.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我很开心！",
+        "english": "I'm very happy!",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我到了朋友家。",
+        "english": "I arrived at my friend's house.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "她说：\"你来了！\"",
+        "english": "She says: \"You're here!\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我们一起走路去咖啡店。",
+        "english": "We walk together to the coffee shop.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "咖啡店不大，但很好看。",
+        "english": "The coffee shop is not big, but very nice looking.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "有很多人。",
+        "english": "There are many people.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我们看到很多蛋糕。",
+        "english": "We see many cakes.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "有巧克力蛋糕、苹果蛋糕，还有奶油蛋糕。",
+        "english": "There are chocolate cake, apple cake, and cream cake.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "有热咖啡、冰咖啡，还有牛奶。",
+        "english": "There's hot coffee, iced coffee, and milk.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我说：\"我要一杯热咖啡，一个巧克力蛋糕。\"",
+        "english": "I say: \"I want a cup of hot coffee and a chocolate cake.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "她说：\"我要一杯牛奶，一个苹果蛋糕。\"",
+        "english": "She says: \"I want a cup of milk and an apple cake.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "服务员说：\"好的，请等一下。\"",
+        "english": "The server says: \"Okay, please wait a moment.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我们找了一个桌子坐下。",
+        "english": "We find a table and sit down.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我的咖啡来了。蛋糕也来了。",
+        "english": "My coffee arrived. The cake also arrived.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我说：\"这个蛋糕很好吃！\"",
+        "english": "I say: \"This cake is delicious!\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "她说：\"是啊，甜甜的。\"",
+        "english": "She says: \"Yes, it's sweet.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我们一边吃，一边聊天。",
+        "english": "We eat while chatting.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我们聊学校、工作、和家人。",
+        "english": "We chat about school, work, and family.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "她说：\"我们下次去别的地方吃吧。\"",
+        "english": "She says: \"Let's go eat somewhere else next time.\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我说：\"好啊！\"",
+        "english": "I say: \"Sure!\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "吃完了，我们说：\"再见！\"",
+        "english": "After finishing eating, we say: \"Goodbye!\"",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      },
+      {
+        "chinese": "我回家了。今天很开心。",
+        "english": "I went home. Today was very happy.",
+        "timing": {
+          "start": 0,
+          "end": 0,
+          "duration": 0
+        },
+        "words": []
+      }
+    ]
+  },
+  "vocabulary": [
+    {
+      "chinese": "星期六",
+      "english": "Saturday"
+    },
+    {
+      "chinese": "工作",
+      "english": "work"
+    },
+    {
+      "chinese": "朋友",
+      "english": "friend"
+    },
+    {
+      "chinese": "打电话",
+      "english": "make a phone call"
+    },
+    {
+      "chinese": "咖啡",
+      "english": "coffee"
+    },
+    {
+      "chinese": "下午",
+      "english": "afternoon"
+    },
+    {
+      "chinese": "刷牙",
+      "english": "brush teeth"
+    },
+    {
+      "chinese": "洗脸",
+      "english": "wash face"
+    },
+    {
+      "chinese": "衣服",
+      "english": "clothes"
+    },
+    {
+      "chinese": "开心",
+      "english": "happy"
+    },
+    {
+      "chinese": "咖啡店",
+      "english": "coffee shop"
+    },
+    {
+      "chinese": "蛋糕",
+      "english": "cake"
+    },
+    {
+      "chinese": "巧克力",
+      "english": "chocolate"
+    },
+    {
+      "chinese": "苹果",
+      "english": "apple"
+    },
+    {
+      "chinese": "奶油",
+      "english": "cream"
+    },
+    {
+      "chinese": "牛奶",
+      "english": "milk"
+    },
+    {
+      "chinese": "服务员",
+      "english": "server/waiter"
+    },
+    {
+      "chinese": "桌子",
+      "english": "table"
+    },
+    {
+      "chinese": "好吃",
+      "english": "delicious"
+    },
+    {
+      "chinese": "甜",
+      "english": "sweet"
+    },
+    {
+      "chinese": "聊天",
+      "english": "chat"
+    },
+    {
+      "chinese": "学校",
+      "english": "school"
+    },
+    {
+      "chinese": "家人",
+      "english": "family"
+    },
+    {
+      "chinese": "地方",
+      "english": "place"
+    },
+    {
+      "chinese": "回家",
+      "english": "go home"
+    }
+  ],
+  "metadata": {
+    "dateCreated": "2025-01-27T10:00:00Z",
+    "dateModified": "2025-01-27T10:00:00Z",
+    "author": "ZiPop Team",
+    "version": "1.0",
+    "audioProcessed": false,
+    "timingsUpdated": false,
+    "timingsSource": "pending"
+  },
+  "audio": {
+    "enabled": true,
+    "file": "coffee_and_cake.mp3",
+    "hasTimings": false,
+    "totalDuration": 0
+  }
+} 
