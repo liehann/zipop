@@ -48,6 +48,7 @@ model Content {
   vocabulary      Json     // VocabularyItem[]
   metadata        Json     // LessonMetadata
   audio           Json?    // AudioConfig
+  forceAlignmentResponse Json? // Stored alignment response from providers like 11 Labs
   
   // Timestamps
   createdAt       DateTime @default(now())

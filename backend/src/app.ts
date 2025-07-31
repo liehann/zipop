@@ -34,6 +34,11 @@ app.register(staticFiles, {
   prefix: '/static/',
 });
 
+// Serve management interface
+app.get('/management', async (request, reply) => {
+  return reply.sendFile('management.html');
+});
+
 // Add Prisma to Fastify instance
 app.decorate('prisma', prisma);
 
@@ -72,6 +77,7 @@ app.get('/', async (request, reply) => {
       categories: '/api/v1/categories',
       levels: '/api/v1/levels',
       static: '/static/',
+      management: '/management',
       health: '/health'
     }
   };
