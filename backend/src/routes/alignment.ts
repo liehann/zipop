@@ -554,87 +554,111 @@ async function updateContentWithAlignment(
 function processAlignmentData(contentData: any, alignment: ElevenLabsAlignment, originalText: string): any {
   // Convert 11 Labs alignment data to our content structure
   console.log('🔧 Processing 11 Labs alignment data...');
-  console.log(`📊 Characters: ${alignment.characters.length}, Words: ${alignment.words.length}, Loss: ${alignment.loss}`);
+  console.log(`📊 Characters: ${alignment.characters?.length || 0}, Words: ${alignment.words?.length || 0}, Loss: ${alignment.loss}`);
   
-  // Create position-based character timing array (not text-based to handle duplicates)
+  // Use character-level data if available, otherwise use word-level data
   const charTimings = alignment.characters || alignment.words || [];
   console.log(`🔤 Processing ${charTimings.length} character timings`);
   
-  // Build the full text from character timings to match positions
+  // Build the aligned text from timings and compare with original
   const alignedText = charTimings.map(char => char.text).join('');
   console.log(`📝 Aligned text length: ${alignedText.length}, Original text length: ${originalText.length}`);
-  console.log(`📝 Aligned text preview: ${alignedText.substring(0, 50)}...`);
-  console.log(`📝 Original text preview: ${originalText.substring(0, 50)}...`);
   
-  // Update sentences with timing data from 11 Labs
+  // Filter out whitespace from both texts for comparison (but keep positions)
+  const originalNoSpaces = originalText.replace(/\s/g, '');
+  const alignedNoSpaces = alignedText.replace(/\s/g, '');
+  
+  if (originalNoSpaces !== alignedNoSpaces) {
+    console.error(`❌ Text mismatch!`);
+    console.error(`Original (no spaces): ${originalNoSpaces.substring(0, 100)}...`);
+    console.error(`Aligned (no spaces):  ${alignedNoSpaces.substring(0, 100)}...`);
+    throw new Error(`Text mismatch between database content and 11 Labs response. Original: ${originalNoSpaces.length} chars, Aligned: ${alignedNoSpaces.length} chars`);
+  }
+  
+  console.log(`✅ Text match confirmed (ignoring whitespace)`);
+  
+  // Create a mapping of original text positions to timing data
+  const positionToTiming: { [position: number]: { start: number; end: number; text: string } } = {};
+  
+  let originalPos = 0;
+  let alignedPos = 0;
+  
+  // Walk through both texts in tandem, mapping positions to timing
+  while (originalPos < originalText.length && alignedPos < charTimings.length) {
+    const originalChar = originalText[originalPos];
+    const alignedChar = charTimings[alignedPos].text;
+    
+    if (originalChar === alignedChar) {
+      // Characters match exactly - store timing
+      positionToTiming[originalPos] = {
+        start: charTimings[alignedPos].start,
+        end: charTimings[alignedPos].end,
+        text: alignedChar
+      };
+      originalPos++;
+      alignedPos++;
+    } else if (/\s/.test(originalChar)) {
+      // Original has whitespace that aligned doesn't - skip original
+      originalPos++;
+    } else if (/\s/.test(alignedChar)) {
+      // Aligned has whitespace that original doesn't - skip aligned
+      alignedPos++;
+    } else {
+      // Character mismatch - throw error
+      throw new Error(`Character mismatch at position ${originalPos}: original='${originalChar}' vs aligned='${alignedChar}'`);
+    }
+  }
+  
+  console.log(`📍 Mapped ${Object.keys(positionToTiming).length} character positions to timing data`);
+  
+  // Now process sentences using the position mapping
   const updatedSentences = contentData.sentences.map((sentence: any, sentenceIndex: number) => {
     const sentenceText = sentence.chinese;
-    console.log(`🔤 Processing sentence ${sentenceIndex + 1}: ${sentenceText}`);
+    console.log(`🔤 Processing sentence ${sentenceIndex + 1}: "${sentenceText}"`);
     
     // Find where this sentence appears in the original text
     const sentenceStartPos = originalText.indexOf(sentenceText);
     if (sentenceStartPos === -1) {
-      console.log(`⚠️ Sentence not found in original text: ${sentenceText.substring(0, 20)}...`);
+      console.log(`⚠️ Sentence not found in original text`);
       return sentence;
     }
     
     const sentenceEndPos = sentenceStartPos + sentenceText.length - 1;
-    console.log(`📍 Sentence position in original text: ${sentenceStartPos} - ${sentenceEndPos}`);
+    console.log(`📍 Sentence spans positions ${sentenceStartPos} to ${sentenceEndPos} in original text`);
     
-    // Find corresponding positions in aligned text
-    let alignedStartIdx = -1;
-    let alignedEndIdx = -1;
-    
-    // Try to match the sentence in the aligned text
-    for (let i = 0; i <= alignedText.length - sentenceText.length; i++) {
-      if (alignedText.substring(i, i + sentenceText.length) === sentenceText) {
-        alignedStartIdx = i;
-        alignedEndIdx = i + sentenceText.length - 1;
-        break;
-      }
-    }
-    
-    if (alignedStartIdx === -1) {
-      console.log(`⚠️ Sentence not found in aligned text: ${sentenceText.substring(0, 20)}...`);
-      return sentence;
-    }
-    
-    console.log(`📍 Sentence position in aligned text: ${alignedStartIdx} - ${alignedEndIdx}`);
-    
-    // Get timing from character positions
-    const startTiming = charTimings[alignedStartIdx];
-    const endTiming = charTimings[alignedEndIdx];
-    
-    if (!startTiming || !endTiming) {
-      console.log(`⚠️ No timing found for sentence positions`);
-      return sentence;
-    }
-    
-    const timing = {
-      start: startTiming.start,
-      end: endTiming.end,
-      duration: endTiming.end - startTiming.start
-    };
-    
-    console.log(`⏱️ Sentence timing: ${timing.start}s - ${timing.end}s (${timing.duration}s)`);
-    
-    // Create word-level timing for each character in the sentence
+    // Find the first and last characters that have timing data
+    let firstTiming = null;
+    let lastTiming = null;
     const sentenceWords = [];
-    for (let i = 0; i < sentenceText.length; i++) {
-      const charIdx = alignedStartIdx + i;
-      const charTiming = charTimings[charIdx];
-      
-      if (charTiming) {
+    
+    for (let pos = sentenceStartPos; pos <= sentenceEndPos; pos++) {
+      const timing = positionToTiming[pos];
+      if (timing) {
+        if (!firstTiming) firstTiming = timing;
+        lastTiming = timing;
+        
         sentenceWords.push({
-          word: charTiming.text,
-          start: charTiming.start,
-          end: charTiming.end,
-          duration: charTiming.end - charTiming.start
+          word: timing.text,
+          start: timing.start,
+          end: timing.end,
+          duration: timing.end - timing.start
         });
       }
     }
     
-    console.log(`📝 Created ${sentenceWords.length} word timings for sentence`);
+    if (!firstTiming || !lastTiming) {
+      console.log(`⚠️ No timing data found for sentence`);
+      return sentence;
+    }
+    
+    const timing = {
+      start: firstTiming.start,
+      end: lastTiming.end,
+      duration: lastTiming.end - firstTiming.start
+    };
+    
+    console.log(`⏱️ Sentence timing: ${timing.start}s - ${timing.end}s (${timing.duration}s)`);
+    console.log(`📝 Created ${sentenceWords.length} word timings`);
     
     return {
       ...sentence,
