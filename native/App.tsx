@@ -15,12 +15,13 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Dimensions,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 // Import hooks and components
 import { useAppState } from './hooks/useAppState';
-import WordGrid from './components/WordGrid';
+import WordGrid, { WordGridRef } from './components/WordGrid';
 import TranslationView from './components/TranslationView';
 import AddTextView from './components/AddTextView';
 import ChooseTextView from './components/ChooseTextView';
@@ -31,6 +32,7 @@ import { SavedDocument } from './types';
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const scrollViewRef = useRef<ScrollView>(null);
+  const wordGridRef = useRef<WordGridRef>(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   
   // Use the domain layer through the custom hook
@@ -63,6 +65,39 @@ function App(): React.JSX.Element {
       setCurrentSentence(wordList.sentences[0].id);
     }
   }, [wordList.sentences, currentSentenceId, setCurrentSentence]);
+
+  // Auto-scroll to current sentence when it changes
+  useEffect(() => {
+    if (currentSentenceId && wordGridRef.current) {
+      // Small delay to ensure the UI has updated
+      const timeoutId = setTimeout(() => {
+        wordGridRef.current?.scrollToSentence(currentSentenceId);
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentSentenceId]);
+
+  // Handle scrolling when sentence position is available
+  const handleSentenceScroll = (sentenceId: string, y: number, height: number) => {
+    if (scrollViewRef.current) {
+      // Get the device's actual dimensions
+      const screenHeight = Dimensions.get('window').height;
+      const headerHeight = 80; // Header with audio controls
+      const footerHeight = 150; // Translation view height
+      const availableHeight = screenHeight - headerHeight - footerHeight;
+      
+      // Center the sentence in the available viewport
+      // Add some padding so sentence isn't at the very edge
+      const paddingTop = 50;
+      const targetY = Math.max(0, y - paddingTop);
+      
+      scrollViewRef.current.scrollTo({
+        y: targetY,
+        animated: true,
+      });
+    }
+  };
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
@@ -113,7 +148,9 @@ function App(): React.JSX.Element {
             onPress={() => {
               console.log('🔄 Retrying content load...');
               // Force app to reload by triggering a re-render
-              window.location?.reload?.() || require('react-native').DevSettings?.reload?.();
+              Platform.OS === 'web' 
+        ? (global as any).location?.reload?.() 
+        : require('react-native').DevSettings?.reload?.();
             }}
           >
             <Text style={[styles.retryButtonText, { color: isDarkMode ? '#ffffff' : '#000000' }]}>
@@ -224,12 +261,14 @@ function App(): React.JSX.Element {
               bounces={false}
             >
               <WordGrid
+                ref={wordGridRef}
                 sentences={wordList.sentences}
                 selectedWordId={selectedWord?.id}
                 selectedSentenceId={selectedSentence?.id}
                 currentSentenceId={currentSentenceId}
                 onWordPress={selectWord}
                 onSentencePress={selectSentence}
+                onSentenceLayout={handleSentenceScroll}
               />
             </ScrollView>
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import {
   View,
   Text,
@@ -15,17 +15,40 @@ interface WordGridProps {
   currentSentenceId?: string | null;
   onWordPress: (word: Word) => void;
   onSentencePress: (sentence: Sentence) => void;
+  onSentenceLayout?: (sentenceId: string, y: number, height: number) => void;
 }
 
-const WordGrid: React.FC<WordGridProps> = ({
+export interface WordGridRef {
+  scrollToSentence: (sentenceId: string) => void;
+}
+
+interface SentencePosition {
+  id: string;
+  y: number;
+  height: number;
+}
+
+const WordGrid = forwardRef<WordGridRef, WordGridProps>(({
   sentences,
   selectedWordId,
   selectedSentenceId,
   currentSentenceId,
   onWordPress,
   onSentencePress,
-}) => {
+  onSentenceLayout,
+}, ref) => {
   const isDarkMode = useColorScheme() === 'dark';
+  const sentencePositions = useRef<Map<string, SentencePosition>>(new Map());
+
+  // Expose scrollToSentence method to parent component
+  useImperativeHandle(ref, () => ({
+    scrollToSentence: (sentenceId: string) => {
+      const position = sentencePositions.current.get(sentenceId);
+      if (position && onSentenceLayout) {
+        onSentenceLayout(sentenceId, position.y, position.height);
+      }
+    },
+  }), [onSentenceLayout]);
 
   const renderWord = (word: Word) => {
     const isSelected = selectedWordId === word.id;
@@ -72,7 +95,15 @@ const WordGrid: React.FC<WordGridProps> = ({
     const isSelectedSentence = selectedSentenceId === sentence.id;
     
     return (
-      <View key={sentence.id} style={styles.sentenceContainer}>
+      <View 
+        key={sentence.id} 
+        style={styles.sentenceContainer}
+        onLayout={(event) => {
+          const { y, height } = event.nativeEvent.layout;
+          const position: SentencePosition = { id: sentence.id, y, height };
+          sentencePositions.current.set(sentence.id, position);
+        }}
+      >
         <TouchableOpacity
           style={[
             styles.sentenceContent,
@@ -119,7 +150,7 @@ const WordGrid: React.FC<WordGridProps> = ({
       {sentences.map(renderSentence)}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -184,5 +215,7 @@ const styles = StyleSheet.create({
     flexShrink: 1, // Allow text to shrink if needed
   },
 });
+
+WordGrid.displayName = 'WordGrid';
 
 export default WordGrid; 
