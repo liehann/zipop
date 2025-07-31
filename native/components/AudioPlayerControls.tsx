@@ -91,9 +91,9 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
     background: isDarkMode ? '#1c1c1e' : '#f2f2f7',
     text: isDarkMode ? '#ffffff' : '#000000',
     textSecondary: isDarkMode ? '#8e8e93' : '#6d6d70',
-    accent: '#007AFF',
+    accent: '#007AFF', // Match sentence highlight blue
     sliderTrack: isDarkMode ? '#3a3a3c' : '#c7c7cc',
-    sliderProgress: '#007AFF',
+    sliderProgress: '#007AFF', // Match sentence highlight blue
     buttonBg: isDarkMode ? '#2c2c2e' : '#ffffff',
     border: isDarkMode ? '#38383a' : '#c6c6c8',
   };
@@ -170,7 +170,10 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
             onPress={onPrevious}
             activeOpacity={0.6}
           >
-            <View style={[styles.prevIcon, { borderRightColor: colors.text }]} />
+            <View style={styles.prevIcon}>
+              <View style={[styles.prevLine, { backgroundColor: colors.text }]} />
+              <View style={[styles.prevTriangle, { borderRightColor: colors.text }]} />
+            </View>
           </TouchableOpacity>
 
           {/* Repeat Button */}
@@ -189,20 +192,20 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
           {/* Play/Pause Button */}
           <TouchableOpacity
             style={[
-              styles.playButton, 
-              isCompact && styles.compactPlayButton,
-              { backgroundColor: colors.accent }
+              styles.controlButton, 
+              isCompact && styles.compactControlButton,
+              { backgroundColor: colors.buttonBg, borderColor: colors.border }
             ]}
             onPress={onPlayPause}
             activeOpacity={0.6}
           >
             {isPlaying ? (
               <View style={styles.pauseIconContainer}>
-                <View style={[styles.pauseBar, { backgroundColor: '#ffffff' }]} />
-                <View style={[styles.pauseBar, { backgroundColor: '#ffffff' }]} />
+                <View style={[styles.pauseBar, { backgroundColor: colors.text }]} />
+                <View style={[styles.pauseBar, { backgroundColor: colors.text }]} />
               </View>
             ) : (
-              <View style={[styles.playIcon, { borderLeftColor: '#ffffff' }]} />
+              <View style={[styles.playIcon, { borderLeftColor: colors.text }]} />
             )}
           </TouchableOpacity>
 
@@ -216,7 +219,10 @@ const AudioPlayerControls: React.FC<AudioPlayerControlsProps> = ({
             onPress={onNext}
             activeOpacity={0.6}
           >
-            <View style={[styles.nextIcon, { borderLeftColor: colors.text }]} />
+            <View style={styles.nextIcon}>
+              <View style={[styles.nextTriangle, { borderLeftColor: colors.text }]} />
+              <View style={[styles.nextLine, { backgroundColor: colors.text }]} />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -311,25 +317,7 @@ const styles = StyleSheet.create({
   controlButtonText: {
     fontSize: 14,
   },
-  playButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  compactPlayButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    marginHorizontal: 6,
-  },
+
   timeContainer: {
     paddingLeft: 8,
   },
@@ -365,24 +353,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   prevIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  prevLine: {
+    width: 2,
+    height: 12,
+    backgroundColor: '#666',
+    marginRight: 2,
+  },
+  prevTriangle: {
     width: 0,
     height: 0,
-    borderRightWidth: 8,
-    borderTopWidth: 5,
-    borderBottomWidth: 5,
+    borderRightWidth: 6,
+    borderTopWidth: 4,
+    borderBottomWidth: 4,
     borderRightColor: '#666',
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
   },
   nextIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextTriangle: {
     width: 0,
     height: 0,
-    borderLeftWidth: 8,
-    borderTopWidth: 5,
-    borderBottomWidth: 5,
+    borderLeftWidth: 6,
+    borderTopWidth: 4,
+    borderBottomWidth: 4,
     borderLeftColor: '#666',
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
+  },
+  nextLine: {
+    width: 2,
+    height: 12,
+    backgroundColor: '#666',
+    marginLeft: 2,
   },
   repeatIcon: {
     width: 14,
