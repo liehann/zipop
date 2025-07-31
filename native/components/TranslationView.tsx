@@ -7,7 +7,6 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Word, Sentence } from '../types';
-import { useAppState } from '../hooks/useAppState';
 
 interface TranslationViewProps {
   selectedWord: Word | null;
@@ -21,7 +20,7 @@ const TranslationView: React.FC<TranslationViewProps> = ({
   onSentenceSelect 
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
-  const { playSentenceAudio, audioState } = useAppState();
+
 
   // Helper function to get sentence translation from individual words
   const getSentenceTranslation = (sentence: Sentence) => {
@@ -51,11 +50,7 @@ const TranslationView: React.FC<TranslationViewProps> = ({
     }
   };
 
-  const handlePlayAudio = () => {
-    if (selectedSentence) {
-      playSentenceAudio(selectedSentence);
-    }
-  };
+
 
   if (!selectedWord && !selectedSentence) {
     return (
@@ -79,7 +74,7 @@ const TranslationView: React.FC<TranslationViewProps> = ({
       { backgroundColor: isDarkMode ? '#2a2a2a' : '#ffffff' }
     ]}>
       {selectedSentence ? (
-        // Show sentence translation with play button
+        // Show sentence translation
         <View style={styles.translationContent}>
           <View style={styles.sentenceHeader}>
             <TouchableOpacity onPress={handleSentencePress} activeOpacity={0.7} style={styles.sentenceTextContainer}>
@@ -108,20 +103,7 @@ const TranslationView: React.FC<TranslationViewProps> = ({
                 </View>
               </View>
             </TouchableOpacity>
-            
-            {/* Play button */}
-            <TouchableOpacity 
-              onPress={handlePlayAudio}
-              style={[
-                styles.playButton,
-                { backgroundColor: isDarkMode ? '#007AFF' : '#007AFF' }
-              ]}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.playButtonText}>
-                {audioState.isPlaying ? '⏸' : '▶️'}
-              </Text>
-            </TouchableOpacity>
+
           </View>
         </View>
       ) : selectedWord ? (
@@ -191,22 +173,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 15,
   },
-  playButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  playButtonText: {
-    fontSize: 18,
-    color: '#ffffff',
-  },
+
   englishTextLarge: {
     fontSize: 20,
     fontWeight: '600',
